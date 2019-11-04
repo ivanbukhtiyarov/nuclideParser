@@ -48,7 +48,7 @@ struct s_nfy {
 struct s_decay {
     std::string                     type;
     std::string                     target;
-    std::string                     branching_ratio;
+    double                          branching_ratio;
 };
 
 
