@@ -1,7 +1,3 @@
-//
-// Created by Бухтияров  Иван on 02/10/2019.
-//
-
 #ifndef IBRAE2_NUCLIDE_CLASS_H
 #define IBRAE2_NUCLIDE_CLASS_H
 
@@ -13,6 +9,7 @@
 #include "pugiData/pugixml.h"
 #include <chrono>
 
+namespace openbps {
 
 class Timer
 {
@@ -38,55 +35,72 @@ private:
 };
 
 
-typedef struct                      s_yield
-{
+struct s_yield {
     double                          energy;
     std::map<std::string,double>    product_data;
-}                                   t_yield;
+};                                   
 
-typedef struct                      s_neutron_fission_yields
-{
+struct s_nfy {
     std::vector<double>             energies;
-    std::vector<t_yield>            yield_arr;
-}                                   t_nfy;
+    std::vector<s_yield>            yield_arr;
+};                                   
 
-typedef struct                      s_decay
-{
+struct s_decay {
     std::string                     type;
     std::string                     target;
-    double                          branching_ratio;
-}                                   t_decay;
+    std::string                     branching_ratio;
+};
 
-typedef struct                      s_reaction
-{
+
+struct s_reaction {
     std::string                     type;
     std::string                     target;
     double                          q;
-}                                   t_reaction;
+};
 
-typedef struct                      s_nuclide
-{
+struct s_nuclide {
     std::string                     name;
     double                          half_life;
     double                          decay_energy;
     size_t                          decay_modes;
     size_t                          reactions;
-    std::vector<t_decay>            decay_arr;
-    std::vector<t_reaction>         reaction_arr;
-    t_nfy                           nfy;
-}                                   t_nuclide;
+    std::vector<s_decay>            decay_arr;
+    std::vector<s_reaction>         reaction_arr;
+    s_nfy                           nfy;
+};
 
-typedef struct                      s_chain
+//==============================================================================
+// Chain class
+//==============================================================================
+
+class Chain
 {
-    std::map<std::string,t_nuclide> nuclides;
-}                                   t_chain;
+public:
 
-std::vector<double>                 splitAtof(const std::string& s, char delimiter);
-std::vector<std::string>            split(const std::string& s, char delimiter);
-t_decay                             parse_decay(pugi::xml_node node);
-t_reaction                          parse_reaction(pugi::xml_node node);
-t_yield                             parse_yield(pugi::xml_node node);
-t_nfy                               parse_nfy(pugi::xml_node node);
-t_nuclide                           parse_nuclide(pugi::xml_node node);
-t_chain                             parse_chain(pugi::xml_node node);
+    std::map<std::string,s_nuclide> nuclides;
+    //Constructor
+    Chain() { };
+    Chain(pugi::xml_node node);
+
+private:
+   
+    s_decay parse_decay_(pugi::xml_node node);
+    s_reaction parse_reaction_(pugi::xml_node node);
+    s_yield parse_yield_(pugi::xml_node node);
+    s_nfy parse_nfy_(pugi::xml_node node);
+    s_nuclide parse_nuclide_(pugi::xml_node node);
+
+  
+};
+
+std::string                  get_node_value(pugi::xml_node node, 
+                                            const char* name);
+bool                         get_node_value_bool(pugi::xml_node node, 
+                                                 const char* name);
+std::vector<double>          splitAtof(const std::string& s, char delimiter);
+std::vector<std::string>     split(const std::string& s, char delimiter);
+
+
+} //namespace openbps
+
 #endif //IBRAE2_NUCLIDE_CLASS_H
