@@ -1,12 +1,48 @@
 #include "nuclide_class.h"
 
+namespace openbps {
+
+std::string
+get_node_value(pugi::xml_node node, const char* name)
+{
+  // Search for either an attribute or child tag and get the data as a char*.
+  const pugi::char_t* value_char;
+  if (node.attribute(name)) {
+    value_char = node.attribute(name).value();
+  } else if (node.child(name)) {
+    value_char = node.child_value(name);
+  } else {
+    
+    std::cerr << "Node \"" << name << "\" is not a member of the \""
+              << node.name() << "\" XML node";
+    
+  }
+  std::string value {value_char};
+  return value;
+}
+
+bool
+get_node_value_bool(pugi::xml_node node, const char* name)
+{
+  if (node.attribute(name)) {
+    return node.attribute(name).as_bool();
+  } else if (node.child(name)) {
+    return node.child(name).text().as_bool();
+  } else {
+    
+    std::cerr << "Node \"" << name << "\" is not a member of the \""
+              << node.name() << "\" XML node";
+    
+  }
+  return false;
+}
+
 std::vector<std::string> split(const std::string& s, char delimiter)
 {
     std::vector<std::string> tokens;
     std::string token;
     std::istringstream tokenStream(s);
-    while (std::getline(tokenStream, token, delimiter))
-    {
+    while (std::getline(tokenStream, token, delimiter)) {
         tokens.push_back(token);
     }
     return tokens;
@@ -17,17 +53,21 @@ std::vector<double> splitAtof(const std::string& s, char delimiter)
     std::vector<double> tokens;
     std::string token;
     std::istringstream tokenStream(s);
-    while (std::getline(tokenStream, token, delimiter))
-    {
-
+    while (std::getline(tokenStream, token, delimiter)) {
         tokens.push_back(atof(token.c_str()));
     }
     return tokens;
 }
 
-t_decay parse_decay(pugi::xml_node node)
+
+//==============================================================================
+// Chain implementation
+//==============================================================================
+
+
+s_decay Chain::parse_decay_(pugi::xml_node node)
 {
-    t_decay temp;
+    s_decay temp;
 
     temp.type = node.attribute("type").value();
     temp.target = node.attribute("target").value();
@@ -35,9 +75,9 @@ t_decay parse_decay(pugi::xml_node node)
     return temp;
 }
 
-t_reaction parse_reaction(pugi::xml_node node)
+s_reaction Chain::parse_reaction_(pugi::xml_node node)
 {
-    t_reaction temp;
+    s_reaction temp;
 
     temp.type = node.attribute("type").value();
     temp.q = atof(node.attribute("Q").value());
@@ -45,9 +85,9 @@ t_reaction parse_reaction(pugi::xml_node node)
     return temp;
 }
 
-t_yield parse_yield(pugi::xml_node node)
+s_yield Chain::parse_yield_(pugi::xml_node node)
 {
-    t_yield                  temp;
+    s_yield                  temp;
     std::vector<std::string> nuclides;
     std::vector<double>      numbers;
 
@@ -61,63 +101,55 @@ t_yield parse_yield(pugi::xml_node node)
     return temp;
 }
 
-t_nfy parse_nfy(pugi::xml_node node)
+s_nfy Chain::parse_nfy_(pugi::xml_node node)
 {
-    t_nfy           temp;
+    s_nfy temp;
 
     temp.energies = splitAtof(node.child("energies").child_value(), ' ');
-    for (pugi::xml_node tool = node.child("fission_yields"); tool; tool = tool.next_sibling("fission_yields"))
-    {
-        temp.yield_arr.push_back(parse_yield(tool));
+    for (pugi::xml_node tool : node.children("fission_yields")) {
+        temp.yield_arr.push_back(parse_yield_(tool));
     }
     return temp;
 }
 
-t_nuclide parse_nuclide(pugi::xml_node node)
+s_nuclide Chain::parse_nuclide_(pugi::xml_node node)
 {
-    t_nuclide       temp;
+    s_nuclide temp;
 
     temp.name = node.attribute("name").value();
     temp.decay_modes = atoi(node.attribute("decay_modes").value());
     temp.reactions = atoi(node.attribute("reactions").value());
     temp.half_life = atof(node.attribute("half_life").value());
-    if (temp.decay_modes > 0)
-    {
+    if (temp.decay_modes > 0) {
         temp.decay_energy = atof(node.attribute("decay_energy").value());
-        for (pugi::xml_node tool = node.child("decay"); tool; tool = tool.next_sibling("decay"))
-        {
-            temp.decay_arr.push_back(parse_decay(tool));
+        for (pugi::xml_node tool : node.children("decay")) {
+            temp.decay_arr.push_back(parse_decay_(tool));
         }
     }
-    else
-    {
+    else {
         temp.decay_energy = 0;
     }
 
-    if (temp.reactions > 0)
-    {
-        for (pugi::xml_node tool = node.child("reaction"); tool; tool = tool.next_sibling("reaction"))
-        {
-            temp.reaction_arr.push_back(parse_reaction(tool));
+    if (temp.reactions > 0) {
+        for (pugi::xml_node tool : node.children("reaction")) {
+            temp.reaction_arr.push_back(parse_reaction_(tool));
         }
     }
 
-    if(node.child("neutron_fission_yields"))
-    {
-        temp.nfy = parse_nfy(node.child("neutron_fission_yields"));
+    if(node.child("neutron_fission_yields")) {
+        temp.nfy = parse_nfy_(node.child("neutron_fission_yields"));
     }
     return temp;
 }
 
-t_chain parse_chain(pugi::xml_node node)
+Chain::Chain(pugi::xml_node node)
 {
-    t_chain temp;
-    t_nuclide temp_nuclide;
-
-    for (pugi::xml_node tool = node.child("nuclide"); tool; tool = tool.next_sibling("nuclide"))
-    {
-        temp_nuclide = parse_nuclide(tool);
-        temp.nuclides.insert({temp_nuclide.name, temp_nuclide});
+    
+    for (pugi::xml_node tool : node.children("nuclide")) {
+        nuclides.insert({get_node_value(tool, "name"), parse_nuclide_(tool)});
     }
-    return temp;
+    
 }
+
+} //namespace openbps
+
