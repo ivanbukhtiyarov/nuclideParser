@@ -51,6 +51,7 @@ struct s_decay {
     std::string                     branching_ratio;
 };
 
+
 struct s_reaction {
     std::string                     type;
     std::string                     target;
