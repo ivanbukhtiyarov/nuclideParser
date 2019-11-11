@@ -1,96 +1,76 @@
-#ifndef IBRAE2_NUCLIDE_CLASS_H
-#define IBRAE2_NUCLIDE_CLASS_H
-
-#include <iostream>
-#include <string.h>
-#include <vector>
-#include <map>
-#include <sstream>
-#include "pugiData/pugixml.h"
-#include <chrono>
+#include "nuclide_class.h"
 
 namespace openbps {
 
-    class Timer {
-        using clock_t = std::chrono::high_resolution_clock;
-        using microseconds = std::chrono::microseconds;
+    std::vector<std::pair<int, std::string>> Chain::form_idx_name() {
+        std::vector<std::pair<int, std::string>> out;
+        std::pair<int, std::string> elem;
 
-    public:
-        Timer() : start_(clock_t::now()) {}
-
-        ~Timer() {
-            const auto finish = clock_t::now();
-            const auto us =
-                    std::chrono::duration_cast<microseconds>(finish - start_).count();
-            std::cout << us << " us" << std::endl;
+        for (int i = 0; i < nuclides.size(); i++) {
+            elem.first = i;
+            elem.second = nuclides[i].name;
+            out.push_back(elem);
+          //  std::cout << "idx" << elem.first << "name" << elem.second << std::endl;
         }
+        return out;
+    }
 
-    private:
-        const clock_t::time_point start_;
-    };
+    std::vector<std::pair<int, double>> Chain::form_idx_lambda() {
+        std::vector<std::pair<int, double>> out;
+        std::pair<int, double> elem;
 
-    struct s_yield {
-        double energy;
-        std::map<std::string, double> product_data;
-    };
+        for (int i = 0; i < nuclides.size(); i++) {
+            elem.first = i;
+            elem.second = nuclides[i].half_life;
+            out.push_back(elem);
+            // std::cout << "idx" << elem.first << "Lamda " << elem.second << std::endl;
+        }
+        return out;
+    }
 
-    struct s_nfy {
-        std::vector<double> energies;
-        std::vector<s_yield> yield_arr;
-    };
+    std::vector<std::vector<double>> Chain::form_idx_decay() {
+        std::vector<std::vector<double>> out;
+        std::vector<double> elem;
 
-    struct s_decay {
-        std::string type;
-        std::string target;
-        double branching_ratio;
-    };
+        for (int i = 0; i < nuclides.size(); i++) {
+            for (int j = 0; j < nuclides[i].decay_arr.size(); j++) {
+                elem.push_back(i);
+                elem.push_back(name_idx[nuclides[i].decay_arr[j].target]);
+                elem.push_back(nuclides[i].decay_arr[j].branching_ratio);
+                // std::cout << "from " << elem[0] << " to " << elem[1] << " ratio" <<
+                // elem[2] << std::endl;
+                out.push_back(elem);
+                elem.clear();
+            }
+        }
+        return (out);
+    }
 
-    struct s_reaction {
-        std::string type;
-        std::string target;
-        double q;
-    };
+    std::map<std::string, std::vector<std::pair<int, int>>> Chain::form_reaction() {
 
-    struct s_nuclide {
-        std::string name;
-        double half_life;
-        double decay_energy;
-        size_t decay_modes;
-        size_t reactions;
-        std::vector<s_decay> decay_arr;
-        std::vector<s_reaction> reaction_arr;
-        s_nfy nfy;
-    };
+        std::map<std::string, std::vector<std::pair<int, int>>> out;
+        std::vector<std::pair<int, int>> n_2n;
+        std::vector<std::pair<int, int>> n_3n;
+        std::vector<std::pair<int, int>> n_a;
+        std::vector<std::pair<int, int>> n_gamma;
+        std::vector<std::pair<int, int>> n_p;
+        std::pair<int, int> elem;
 
-//==============================================================================
-// Chain class
-//==============================================================================
+        out.insert({"(n,2n)", n_2n});
+        out.insert({"(n,3n)", n_3n});
+        out.insert({"(n,gamma)", n_gamma});
+        out.insert({"(n,a)", n_a});
+        out.insert({"(n,p)", n_p});
 
-    class Chain {
-    public:
-        std::map<std::string, size_t> name_idx;
-        std::vector<s_nuclide> nuclides;
-        // Constructor
-        Chain(){};
-        Chain(pugi::xml_node node);
-        std::vector<std::pair<int, std::string>> form_idx_name();
-        std::vector<std::pair<int, double>> form_idx_lambda();
-        std::vector<std::vector<double>> form_idx_decay();
-        std::map<std::string, std::vector<std::pair<int, int>>> form_reaction();
+        for (int i = 0; i < nuclides.size(); i++) {
+            for (int j = 0; j < nuclides[i].reaction_arr.size(); j++) {
+                elem.first = i;
+                elem.second = name_idx[nuclides[i].reaction_arr[j].target];
+                out[nuclides[i].reaction_arr[j].type].push_back(elem);
+            }
+        }
+        return (out);
+    }
+//    std::map<std::string, std::vector<std::vector
 
-    private:
-        s_decay parse_decay_(pugi::xml_node node);
-        s_reaction parse_reaction_(pugi::xml_node node);
-        s_yield parse_yield_(pugi::xml_node node);
-        s_nfy parse_nfy_(pugi::xml_node node);
-        s_nuclide parse_nuclide_(pugi::xml_node node);
-    };
-
-    std::string get_node_value(pugi::xml_node node, const char *name);
-    bool get_node_value_bool(pugi::xml_node node, const char *name);
-    std::vector<double> splitAtof(const std::string &s, char delimiter);
-    std::vector<std::string> split(const std::string &s, char delimiter);
-
-} // namespace openbps
-
-#endif // IBRAE2_NUCLIDE_CLASS_H
+} // namespace close
