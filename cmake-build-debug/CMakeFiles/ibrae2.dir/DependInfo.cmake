@@ -4,9 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/main.cpp" "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/main.cpp.o"
-  "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/parse.cpp" "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/parse.cpp.o"
-  "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/pugiData/pugixml.cpp" "/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o"
+  "/Users/ivanbukhtiyarov/ibrae2/extern/pugiData/pugixml.cpp" "/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o"
+  "/Users/ivanbukhtiyarov/ibrae2/src/form_output.cpp" "/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/src/form_output.cpp.o"
+  "/Users/ivanbukhtiyarov/ibrae2/src/main.cpp" "/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/src/main.cpp.o"
+  "/Users/ivanbukhtiyarov/ibrae2/src/parse.cpp" "/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/src/parse.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 

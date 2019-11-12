@@ -14,14 +14,5 @@ int main(int arc, char *argv[]) {
 
     Chain chain(chain_node);
 
-    //    std::map<std::string, std::vector<std::pair<int, int>>> test;
-    //   // chain.form_idx_name();
-    //    test = chain.form_reaction();
-    //    for (int i = 0; i < test["(n,gamma)"].size(); ++i) {
-    //
-    //        std::cout <<"first" << test["(n,gamma)"][i].first << "second" <<
-    //        test["(n,gamma)"][i].second << std::endl;
-    //    }
-
     return 0;
 }

@@ -43,10 +43,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ivanbukhtiyarov/Desktop/c++/ibrae2
+CMAKE_SOURCE_DIR = /Users/ivanbukhtiyarov/ibrae2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/ivanbukhtiyarov/ibrae2/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/ibrae2.dir/depend.make
@@ -57,93 +57,119 @@ include CMakeFiles/ibrae2.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/ibrae2.dir/flags.make
 
-CMakeFiles/ibrae2.dir/main.cpp.o: CMakeFiles/ibrae2.dir/flags.make
-CMakeFiles/ibrae2.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/ibrae2.dir/main.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/main.cpp.o -c /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/main.cpp
+CMakeFiles/ibrae2.dir/src/main.cpp.o: CMakeFiles/ibrae2.dir/flags.make
+CMakeFiles/ibrae2.dir/src/main.cpp.o: ../src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/ibrae2.dir/src/main.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/src/main.cpp.o -c /Users/ivanbukhtiyarov/ibrae2/src/main.cpp
 
-CMakeFiles/ibrae2.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/main.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/main.cpp > CMakeFiles/ibrae2.dir/main.cpp.i
+CMakeFiles/ibrae2.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/src/main.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/ibrae2/src/main.cpp > CMakeFiles/ibrae2.dir/src/main.cpp.i
 
-CMakeFiles/ibrae2.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/main.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/main.cpp -o CMakeFiles/ibrae2.dir/main.cpp.s
+CMakeFiles/ibrae2.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/src/main.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/ibrae2/src/main.cpp -o CMakeFiles/ibrae2.dir/src/main.cpp.s
 
-CMakeFiles/ibrae2.dir/main.cpp.o.requires:
+CMakeFiles/ibrae2.dir/src/main.cpp.o.requires:
 
-.PHONY : CMakeFiles/ibrae2.dir/main.cpp.o.requires
+.PHONY : CMakeFiles/ibrae2.dir/src/main.cpp.o.requires
 
-CMakeFiles/ibrae2.dir/main.cpp.o.provides: CMakeFiles/ibrae2.dir/main.cpp.o.requires
-	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/main.cpp.o.provides.build
-.PHONY : CMakeFiles/ibrae2.dir/main.cpp.o.provides
+CMakeFiles/ibrae2.dir/src/main.cpp.o.provides: CMakeFiles/ibrae2.dir/src/main.cpp.o.requires
+	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/src/main.cpp.o.provides.build
+.PHONY : CMakeFiles/ibrae2.dir/src/main.cpp.o.provides
 
-CMakeFiles/ibrae2.dir/main.cpp.o.provides.build: CMakeFiles/ibrae2.dir/main.cpp.o
-
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o: CMakeFiles/ibrae2.dir/flags.make
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o: ../pugiData/pugixml.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o -c /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/pugiData/pugixml.cpp
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/pugiData/pugixml.cpp > CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.i
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/pugiData/pugixml.cpp -o CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.s
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.requires:
-
-.PHONY : CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.requires
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.provides: CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.requires
-	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.provides.build
-.PHONY : CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.provides
-
-CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.provides.build: CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o
+CMakeFiles/ibrae2.dir/src/main.cpp.o.provides.build: CMakeFiles/ibrae2.dir/src/main.cpp.o
 
 
-CMakeFiles/ibrae2.dir/parse.cpp.o: CMakeFiles/ibrae2.dir/flags.make
-CMakeFiles/ibrae2.dir/parse.cpp.o: ../parse.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/ibrae2.dir/parse.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/parse.cpp.o -c /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/parse.cpp
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o: CMakeFiles/ibrae2.dir/flags.make
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o: ../extern/pugiData/pugixml.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o -c /Users/ivanbukhtiyarov/ibrae2/extern/pugiData/pugixml.cpp
 
-CMakeFiles/ibrae2.dir/parse.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/parse.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/parse.cpp > CMakeFiles/ibrae2.dir/parse.cpp.i
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/ibrae2/extern/pugiData/pugixml.cpp > CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.i
 
-CMakeFiles/ibrae2.dir/parse.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/parse.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/parse.cpp -o CMakeFiles/ibrae2.dir/parse.cpp.s
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/ibrae2/extern/pugiData/pugixml.cpp -o CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.s
 
-CMakeFiles/ibrae2.dir/parse.cpp.o.requires:
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.requires:
 
-.PHONY : CMakeFiles/ibrae2.dir/parse.cpp.o.requires
+.PHONY : CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.requires
 
-CMakeFiles/ibrae2.dir/parse.cpp.o.provides: CMakeFiles/ibrae2.dir/parse.cpp.o.requires
-	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/parse.cpp.o.provides.build
-.PHONY : CMakeFiles/ibrae2.dir/parse.cpp.o.provides
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.provides: CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.requires
+	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.provides.build
+.PHONY : CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.provides
 
-CMakeFiles/ibrae2.dir/parse.cpp.o.provides.build: CMakeFiles/ibrae2.dir/parse.cpp.o
+CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.provides.build: CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o
+
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.o: CMakeFiles/ibrae2.dir/flags.make
+CMakeFiles/ibrae2.dir/src/parse.cpp.o: ../src/parse.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/ibrae2.dir/src/parse.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/src/parse.cpp.o -c /Users/ivanbukhtiyarov/ibrae2/src/parse.cpp
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/src/parse.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/ibrae2/src/parse.cpp > CMakeFiles/ibrae2.dir/src/parse.cpp.i
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/src/parse.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/ibrae2/src/parse.cpp -o CMakeFiles/ibrae2.dir/src/parse.cpp.s
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.o.requires:
+
+.PHONY : CMakeFiles/ibrae2.dir/src/parse.cpp.o.requires
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.o.provides: CMakeFiles/ibrae2.dir/src/parse.cpp.o.requires
+	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/src/parse.cpp.o.provides.build
+.PHONY : CMakeFiles/ibrae2.dir/src/parse.cpp.o.provides
+
+CMakeFiles/ibrae2.dir/src/parse.cpp.o.provides.build: CMakeFiles/ibrae2.dir/src/parse.cpp.o
+
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.o: CMakeFiles/ibrae2.dir/flags.make
+CMakeFiles/ibrae2.dir/src/form_output.cpp.o: ../src/form_output.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/ibrae2.dir/src/form_output.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/ibrae2.dir/src/form_output.cpp.o -c /Users/ivanbukhtiyarov/ibrae2/src/form_output.cpp
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/ibrae2.dir/src/form_output.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ivanbukhtiyarov/ibrae2/src/form_output.cpp > CMakeFiles/ibrae2.dir/src/form_output.cpp.i
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/ibrae2.dir/src/form_output.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ivanbukhtiyarov/ibrae2/src/form_output.cpp -o CMakeFiles/ibrae2.dir/src/form_output.cpp.s
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.o.requires:
+
+.PHONY : CMakeFiles/ibrae2.dir/src/form_output.cpp.o.requires
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.o.provides: CMakeFiles/ibrae2.dir/src/form_output.cpp.o.requires
+	$(MAKE) -f CMakeFiles/ibrae2.dir/build.make CMakeFiles/ibrae2.dir/src/form_output.cpp.o.provides.build
+.PHONY : CMakeFiles/ibrae2.dir/src/form_output.cpp.o.provides
+
+CMakeFiles/ibrae2.dir/src/form_output.cpp.o.provides.build: CMakeFiles/ibrae2.dir/src/form_output.cpp.o
 
 
 # Object files for target ibrae2
 ibrae2_OBJECTS = \
-"CMakeFiles/ibrae2.dir/main.cpp.o" \
-"CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o" \
-"CMakeFiles/ibrae2.dir/parse.cpp.o"
+"CMakeFiles/ibrae2.dir/src/main.cpp.o" \
+"CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o" \
+"CMakeFiles/ibrae2.dir/src/parse.cpp.o" \
+"CMakeFiles/ibrae2.dir/src/form_output.cpp.o"
 
 # External object files for target ibrae2
 ibrae2_EXTERNAL_OBJECTS =
 
-ibrae2: CMakeFiles/ibrae2.dir/main.cpp.o
-ibrae2: CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o
-ibrae2: CMakeFiles/ibrae2.dir/parse.cpp.o
+ibrae2: CMakeFiles/ibrae2.dir/src/main.cpp.o
+ibrae2: CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o
+ibrae2: CMakeFiles/ibrae2.dir/src/parse.cpp.o
+ibrae2: CMakeFiles/ibrae2.dir/src/form_output.cpp.o
 ibrae2: CMakeFiles/ibrae2.dir/build.make
 ibrae2: CMakeFiles/ibrae2.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable ibrae2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable ibrae2"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ibrae2.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -151,9 +177,10 @@ CMakeFiles/ibrae2.dir/build: ibrae2
 
 .PHONY : CMakeFiles/ibrae2.dir/build
 
-CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/main.cpp.o.requires
-CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/pugiData/pugixml.cpp.o.requires
-CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/parse.cpp.o.requires
+CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/src/main.cpp.o.requires
+CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/extern/pugiData/pugixml.cpp.o.requires
+CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/src/parse.cpp.o.requires
+CMakeFiles/ibrae2.dir/requires: CMakeFiles/ibrae2.dir/src/form_output.cpp.o.requires
 
 .PHONY : CMakeFiles/ibrae2.dir/requires
 
@@ -162,6 +189,6 @@ CMakeFiles/ibrae2.dir/clean:
 .PHONY : CMakeFiles/ibrae2.dir/clean
 
 CMakeFiles/ibrae2.dir/depend:
-	cd /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ivanbukhtiyarov/Desktop/c++/ibrae2 /Users/ivanbukhtiyarov/Desktop/c++/ibrae2 /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug /Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/ivanbukhtiyarov/ibrae2/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ivanbukhtiyarov/ibrae2 /Users/ivanbukhtiyarov/ibrae2 /Users/ivanbukhtiyarov/ibrae2/cmake-build-debug /Users/ivanbukhtiyarov/ibrae2/cmake-build-debug /Users/ivanbukhtiyarov/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ibrae2.dir/depend
 
