@@ -10,9 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Create build directory
-      run: cd nuclideParser && mkdir cmake-build-debug && cd cmake-build-debug
+      run: mkdir cmake-build-debug && cd cmake-build-debug
     - name: Building make by running cmake
-      run: cmake .. -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
+      run: cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
     - name: Configure & make
       run: make all
     - name: Copying a binary into bin
