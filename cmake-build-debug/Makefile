@@ -68,18 +68,6 @@ install/strip/fast: preinstall/fast
 	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip/fast
 
-# Special rule for the target install
-install: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install
-
-# Special rule for the target install
-install/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install/fast
-
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -92,15 +80,17 @@ install/local/fast: preinstall/fast
 	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local/fast
 
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
 
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-
-.PHONY : list_install_components/fast
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
 
 # Special rule for the target edit_cache
 edit_cache:
@@ -123,6 +113,16 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -166,7 +166,7 @@ openbps_lib: cmake_check_build_system
 
 # fast build rule for target.
 openbps_lib/fast:
-	$(MAKE) -f build/CMakeFiles/openbps_lib.dir/build.make build/CMakeFiles/openbps_lib.dir/build
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/build
 .PHONY : openbps_lib/fast
 
 #=============================================================================
@@ -179,7 +179,7 @@ openbps: cmake_check_build_system
 
 # fast build rule for target.
 openbps/fast:
-	$(MAKE) -f build/CMakeFiles/openbps.dir/build.make build/CMakeFiles/openbps.dir/build
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/build
 .PHONY : openbps/fast
 
 #=============================================================================
@@ -192,7 +192,7 @@ o_tst: cmake_check_build_system
 
 # fast build rule for target.
 o_tst/fast:
-	$(MAKE) -f build-test/CMakeFiles/o_tst.dir/build.make build-test/CMakeFiles/o_tst.dir/build
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/build
 .PHONY : o_tst/fast
 
 #=============================================================================
@@ -247,6 +247,189 @@ gtest/fast:
 	$(MAKE) -f lib/googletest/googletest/CMakeFiles/gtest.dir/build.make lib/googletest/googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
 
+extern/pugiData/pugixml.o: extern/pugiData/pugixml.cpp.o
+
+.PHONY : extern/pugiData/pugixml.o
+
+# target to build an object file
+extern/pugiData/pugixml.cpp.o:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/extern/pugiData/pugixml.cpp.o
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/extern/pugiData/pugixml.cpp.o
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/extern/pugiData/pugixml.cpp.o
+.PHONY : extern/pugiData/pugixml.cpp.o
+
+extern/pugiData/pugixml.i: extern/pugiData/pugixml.cpp.i
+
+.PHONY : extern/pugiData/pugixml.i
+
+# target to preprocess a source file
+extern/pugiData/pugixml.cpp.i:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/extern/pugiData/pugixml.cpp.i
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/extern/pugiData/pugixml.cpp.i
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/extern/pugiData/pugixml.cpp.i
+.PHONY : extern/pugiData/pugixml.cpp.i
+
+extern/pugiData/pugixml.s: extern/pugiData/pugixml.cpp.s
+
+.PHONY : extern/pugiData/pugixml.s
+
+# target to generate assembly for a file
+extern/pugiData/pugixml.cpp.s:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/extern/pugiData/pugixml.cpp.s
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/extern/pugiData/pugixml.cpp.s
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/extern/pugiData/pugixml.cpp.s
+.PHONY : extern/pugiData/pugixml.cpp.s
+
+src/form_output.o: src/form_output.cpp.o
+
+.PHONY : src/form_output.o
+
+# target to build an object file
+src/form_output.cpp.o:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/form_output.cpp.o
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/form_output.cpp.o
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/form_output.cpp.o
+.PHONY : src/form_output.cpp.o
+
+src/form_output.i: src/form_output.cpp.i
+
+.PHONY : src/form_output.i
+
+# target to preprocess a source file
+src/form_output.cpp.i:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/form_output.cpp.i
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/form_output.cpp.i
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/form_output.cpp.i
+.PHONY : src/form_output.cpp.i
+
+src/form_output.s: src/form_output.cpp.s
+
+.PHONY : src/form_output.s
+
+# target to generate assembly for a file
+src/form_output.cpp.s:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/form_output.cpp.s
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/form_output.cpp.s
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/form_output.cpp.s
+.PHONY : src/form_output.cpp.s
+
+src/main.o: src/main.cpp.o
+
+.PHONY : src/main.o
+
+# target to build an object file
+src/main.cpp.o:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/main.cpp.o
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
+
+src/main.i: src/main.cpp.i
+
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/main.cpp.i
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/main.cpp.s
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
+
+src/parse.o: src/parse.cpp.o
+
+.PHONY : src/parse.o
+
+# target to build an object file
+src/parse.cpp.o:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/parse.cpp.o
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/parse.cpp.o
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/parse.cpp.o
+.PHONY : src/parse.cpp.o
+
+src/parse.i: src/parse.cpp.i
+
+.PHONY : src/parse.i
+
+# target to preprocess a source file
+src/parse.cpp.i:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/parse.cpp.i
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/parse.cpp.i
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/parse.cpp.i
+.PHONY : src/parse.cpp.i
+
+src/parse.s: src/parse.cpp.s
+
+.PHONY : src/parse.s
+
+# target to generate assembly for a file
+src/parse.cpp.s:
+	$(MAKE) -f CMakeFiles/openbps_lib.dir/build.make CMakeFiles/openbps_lib.dir/src/parse.cpp.s
+	$(MAKE) -f CMakeFiles/openbps.dir/build.make CMakeFiles/openbps.dir/src/parse.cpp.s
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/src/parse.cpp.s
+.PHONY : src/parse.cpp.s
+
+test/main_test.o: test/main_test.cpp.o
+
+.PHONY : test/main_test.o
+
+# target to build an object file
+test/main_test.cpp.o:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/main_test.cpp.o
+.PHONY : test/main_test.cpp.o
+
+test/main_test.i: test/main_test.cpp.i
+
+.PHONY : test/main_test.i
+
+# target to preprocess a source file
+test/main_test.cpp.i:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/main_test.cpp.i
+.PHONY : test/main_test.cpp.i
+
+test/main_test.s: test/main_test.cpp.s
+
+.PHONY : test/main_test.s
+
+# target to generate assembly for a file
+test/main_test.cpp.s:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/main_test.cpp.s
+.PHONY : test/main_test.cpp.s
+
+test/test.o: test/test.cpp.o
+
+.PHONY : test/test.o
+
+# target to build an object file
+test/test.cpp.o:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/test.cpp.o
+.PHONY : test/test.cpp.o
+
+test/test.i: test/test.cpp.i
+
+.PHONY : test/test.i
+
+# target to preprocess a source file
+test/test.cpp.i:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/test.cpp.i
+.PHONY : test/test.cpp.i
+
+test/test.s: test/test.cpp.s
+
+.PHONY : test/test.s
+
+# target to generate assembly for a file
+test/test.cpp.s:
+	$(MAKE) -f CMakeFiles/o_tst.dir/build.make CMakeFiles/o_tst.dir/test/test.cpp.s
+.PHONY : test/test.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -254,18 +437,36 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... install/strip"
-	@echo "... install"
 	@echo "... install/local"
-	@echo "... list_install_components"
-	@echo "... edit_cache"
-	@echo "... rebuild_cache"
+	@echo "... install"
 	@echo "... openbps_lib"
+	@echo "... edit_cache"
 	@echo "... openbps"
 	@echo "... o_tst"
+	@echo "... rebuild_cache"
+	@echo "... list_install_components"
 	@echo "... gmock_main"
 	@echo "... gmock"
 	@echo "... gtest_main"
 	@echo "... gtest"
+	@echo "... extern/pugiData/pugixml.o"
+	@echo "... extern/pugiData/pugixml.i"
+	@echo "... extern/pugiData/pugixml.s"
+	@echo "... src/form_output.o"
+	@echo "... src/form_output.i"
+	@echo "... src/form_output.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
+	@echo "... src/parse.o"
+	@echo "... src/parse.i"
+	@echo "... src/parse.s"
+	@echo "... test/main_test.o"
+	@echo "... test/main_test.i"
+	@echo "... test/main_test.s"
+	@echo "... test/test.o"
+	@echo "... test/test.i"
+	@echo "... test/test.s"
 .PHONY : help
 
 

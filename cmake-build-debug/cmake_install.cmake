@@ -39,8 +39,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/yuri/BPSD/cpp/nuclideParser/cmake-build-debug/build/cmake_install.cmake")
-  include("/home/yuri/BPSD/cpp/nuclideParser/cmake-build-debug/build-test/cmake_install.cmake")
   include("/home/yuri/BPSD/cpp/nuclideParser/cmake-build-debug/lib/googletest/cmake_install.cmake")
 
 endif()

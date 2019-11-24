@@ -8,8 +8,6 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "../CMakeLists.txt"
-  "../build-test/CMakeLists.txt"
-  "../build/CMakeLists.txt"
   "CMakeFiles/3.10.2/CMakeCCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeSystem.cmake"
@@ -136,8 +134,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/3.10.2/CMakeCCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
-  "build/CMakeFiles/CMakeDirectoryInformation.cmake"
-  "build-test/CMakeFiles/CMakeDirectoryInformation.cmake"
   "lib/googletest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "lib/googletest/googlemock/CMakeFiles/CMakeDirectoryInformation.cmake"
   "lib/googletest/googletest/CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -145,9 +141,9 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "build/CMakeFiles/openbps_lib.dir/DependInfo.cmake"
-  "build/CMakeFiles/openbps.dir/DependInfo.cmake"
-  "build-test/CMakeFiles/o_tst.dir/DependInfo.cmake"
+  "CMakeFiles/openbps_lib.dir/DependInfo.cmake"
+  "CMakeFiles/openbps.dir/DependInfo.cmake"
+  "CMakeFiles/o_tst.dir/DependInfo.cmake"
   "lib/googletest/googlemock/CMakeFiles/gmock_main.dir/DependInfo.cmake"
   "lib/googletest/googlemock/CMakeFiles/gmock.dir/DependInfo.cmake"
   "lib/googletest/googletest/CMakeFiles/gtest_main.dir/DependInfo.cmake"
