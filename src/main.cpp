@@ -3,7 +3,7 @@
 int main(int arc, char *argv[]) {
     using namespace openbps;
     Timer t;
-    std::string input_file{"../../Xmls/chain_simple.xml"};
+    std::string input_file{"../Xmls/chain_simple.xml"};
     pugi::xml_node chain_node{read_xml(input_file)};
     Chain chain(chain_node);
 

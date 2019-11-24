@@ -9,5 +9,6 @@ cmake-build-debug/ibrae2
 
 # Source build
 build
+CMakeFiles
 .idea
 cmake-build-debug
