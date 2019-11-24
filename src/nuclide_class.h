@@ -91,7 +91,7 @@ namespace openbps {
     bool get_node_value_bool(pugi::xml_node node, const char *name);
     std::vector<double> splitAtof(const std::string &s, char delimiter);
     std::vector<std::string> split(const std::string &s, char delimiter);
-
+    pugi::xml_node read_xml(const std::string& filename);
 } // namespace openbps
 
 #endif // IBRAE2_NUCLIDE_CLASS_H

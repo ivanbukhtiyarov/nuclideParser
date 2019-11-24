@@ -1,5 +1,5 @@
 #include "nuclide_class.h"
-
+#include "../extern/pugiData/pugixml.h"
 namespace openbps {
 
     std::string get_node_value(pugi::xml_node node, const char *name) {
@@ -49,6 +49,17 @@ namespace openbps {
             tokens.push_back(atof(token.c_str()));
         }
         return tokens;
+    }
+    // Read a chain from xml
+    pugi::xml_node read_xml(const std::string& filename) {
+        pugi::xml_document doc;
+        auto result = doc.load_file(filename.c_str());
+        if (!result) {
+            std::cerr << "Error: file not found!" << std::endl;
+        } 
+
+        pugi::xml_node chain_node = doc.child("depletion_chain");
+        return chain_node;
     }
 
 //==============================================================================

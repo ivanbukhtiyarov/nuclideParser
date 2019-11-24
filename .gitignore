@@ -1,1 +1,13 @@
 cmake-build-debug/ibrae2
+
+# Compiled objects and modules
+*.a
+*.o
+*.mod
+*.log
+*.out
+
+# Source build
+build
+.idea
+cmake-build-debug

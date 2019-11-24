@@ -95,7 +95,7 @@ namespace openbps {
 /*
  * To test this parser (only Pu239 have 2000000.0):
     auto map = chain.form_yield_map();
-    for(int i = 0; i < map["2000000.0"].size(); i++)
+    for(int i = 0; i < map["2.53000e-02"].size(); i++)
     {
         std::cout << map["2000000.0"][i][0] << "  " << map["2000000.0"][i][1] << "  "<< map["2000000.0"][i][2] << "  " <<std::endl;
     }
