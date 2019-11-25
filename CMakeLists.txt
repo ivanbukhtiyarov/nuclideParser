@@ -3,6 +3,8 @@ project(Openbps)
 
 set(CMAKE_CXX_STANDARD 17)
 
+#find_package(GTest REQUIRED)
+
 include_directories(src)
 include_directories(test)
 include_directories(build)
@@ -36,7 +38,7 @@ add_executable(o_tst  "../src/nuclide_class.h"
                       "../test/main_test.cpp"
                       "../extern/pugiData/pugixml.h" 
                       "../extern/pugiData/pugixml.cpp" 
-                      "/usr/include/gtest/gtest.h")
+                      "../lib/googletest/googletest/include/gtest/gtest.h")
 
 add_test(NAME o_tst COMMAND o_tst)
 target_link_libraries(o_tst PUBLIC openbps_lib gtest)
