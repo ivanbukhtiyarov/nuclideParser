@@ -1,0 +1,15 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download gtest and create build directory
+      run: ./test/test.sh
+    - name: Run test!
+      run: ./cmake-build-debug/o_tst
