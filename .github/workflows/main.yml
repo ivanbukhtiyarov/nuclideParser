@@ -11,19 +11,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: list
       run: ls
-    - name: Create build directory
-      run: mkdir cmake-build-debug && cd cmake-build-debug
-    - name: Try to change directory
-      run: cd cmake-build-debug
-    - name: pwd2
-      run : pwd
-    - name: google ls
-      run : ls ./lib/googletest
-    - name: Building make by running cmake
-      run: cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles"
-    - name: Configure & make
-      run: make all
-    - name: Copying a binary into bin
-      run: cp openbps ./bin
+    - name: Download gtest and create build directory
+      run: ./test/test.sh
     - name: Run test!
-      run: ./o_tst
+      run: ./cmake-build-debug/o_tst
