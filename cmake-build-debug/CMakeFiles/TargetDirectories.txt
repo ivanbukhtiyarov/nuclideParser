@@ -1,3 +1,0 @@
-/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/ivanbukhtiyarov/Desktop/c++/ibrae2/cmake-build-debug/CMakeFiles/ibrae2.dir
