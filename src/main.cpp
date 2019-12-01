@@ -13,6 +13,6 @@ int main(int arc, char *argv[]) {
     pugi::xml_node chain_node = doc.child("depletion_chain");
 
     Chain chain(chain_node);
-
+    auto map = chain.form_yield_map();
     return 0;
 }

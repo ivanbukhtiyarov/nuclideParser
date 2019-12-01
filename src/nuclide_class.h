@@ -77,7 +77,7 @@ namespace openbps {
         std::vector<std::pair<int, double>> form_idx_lambda();
         std::vector<std::vector<double>> form_idx_decay();
         std::map<std::string, std::vector<std::pair<int, int>>> form_reaction();
-        std::map<std::string, std::vector<std::vector<double>>> form_yield_map();
+        std::map<double, std::vector<std::vector<double>>> form_yield_map();
 
     private:
         s_decay parse_decay_(pugi::xml_node node);

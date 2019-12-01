@@ -95,9 +95,9 @@ namespace openbps {
 /*
  * To test this parser (only Pu239 have 2000000.0):
     auto map = chain.form_yield_map();
-    for(int i = 0; i < map["2000000.0"].size(); i++)
+    for(int i = 0; i < map[2000000.0].size(); i++)
     {
-        std::cout << map["2000000.0"][i][0] << "  " << map["2000000.0"][i][1] << "  "<< map["2000000.0"][i][2] << "  " <<std::endl;
+        std::cout << map[2000000.0][i][0] << "  " << map[2000000.0][i][1] << "  "<< map[2000000.0][i][2] << "  " <<std::endl;
     }
 output
 ...
@@ -111,22 +111,21 @@ output
 and so on
 
 */
+    std::map<double, std::vector<std::vector<double>>>
+    Chain::form_yield_map(){
 
-    std::map<std::string, std::vector<std::vector<double>>>
-            Chain::form_yield_map(){
-
-        std::map<std::string, std::vector<std::vector<double>>> out;
-        std::vector<std::vector<double>> en_1;
-        std::vector<std::vector<double>> en_2;
-        std::vector<std::vector<double>> en_3;
-        std::vector<std::vector<double>> en_4;
+        std::map<double, std::vector<std::vector<double>>> out;
+        std::vector<std::vector<double>> insertion;
         std::vector<double> elem;
 
-        out.insert({"0.0253", en_1});
-        out.insert({"500000.0", en_2});
-        out.insert({"2000000.0", en_3});
-        out.insert({"14000000.0", en_4});
+        for(int i = 0; i < nuclides.size(); i++) {
 
+            for(int j = 0 ; j < nuclides[i].nfy.energies.size(); j++) {
+
+                if(out.count(nuclides[i].nfy.energies[j]) == 0)
+                    out.insert({nuclides[i].nfy.energies[j], insertion});
+            }
+        }
         for(int i = 0; i < nuclides.size(); i++) {
 
             for(int j = 0 ; j < nuclides[i].nfy.energies.size(); j++) {
@@ -137,20 +136,13 @@ and so on
                     elem.push_back(i);
                     elem.push_back(name_idx[item.first]);
                     elem.push_back(item.second);
-                    //std::cout<<elem[0]<<"   "<<elem[1]<<"   " <<elem[2]<<std::endl;
-                    if(nuclides[i].nfy.yield_arr[j].energy == 0.0253)
-                        out["0.0253"].push_back(elem);
-                    if(nuclides[i].nfy.yield_arr[j].energy == 500000.0)
-                        out["500000.0"].push_back(elem);
-                    if(nuclides[i].nfy.yield_arr[j].energy == 2000000.0)
-                        out["2000000.0"].push_back(elem);
-                    if(nuclides[i].nfy.yield_arr[j].energy == 14000000.0)
-                        out["14000000.0"].push_back(elem);
+                    out[nuclides[i].nfy.yield_arr[j].energy].push_back(elem);
                     elem.clear();
                 }
             }
         }
         return out;
     }
+
 
 } // namespace close
