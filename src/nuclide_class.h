@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include "pugiData/pugixml.h"
+#include "../extern/pugiData/pugixml.h"
 #include <chrono>
 
 namespace openbps {
@@ -77,6 +77,7 @@ namespace openbps {
         std::vector<std::pair<int, double>> form_idx_lambda();
         std::vector<std::vector<double>> form_idx_decay();
         std::map<std::string, std::vector<std::pair<int, int>>> form_reaction();
+        std::map<std::string, std::vector<std::vector<double>>> form_yield_map();
 
     private:
         s_decay parse_decay_(pugi::xml_node node);
@@ -90,7 +91,7 @@ namespace openbps {
     bool get_node_value_bool(pugi::xml_node node, const char *name);
     std::vector<double> splitAtof(const std::string &s, char delimiter);
     std::vector<std::string> split(const std::string &s, char delimiter);
-
+    pugi::xml_node read_xml(const std::string& filename);
 } // namespace openbps
 
 #endif // IBRAE2_NUCLIDE_CLASS_H

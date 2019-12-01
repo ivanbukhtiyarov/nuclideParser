@@ -1,6 +1,8 @@
 name: C/C++ CI
 
+
 on: [push, pull_request]
+
 
 jobs:
   build:
@@ -9,6 +11,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+
     - name: Download gtest and create build directory
       run: ./test/test.sh
     - name: Run test!

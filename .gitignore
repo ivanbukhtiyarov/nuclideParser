@@ -1,0 +1,15 @@
+cmake-build-debug/ibrae2
+
+# Compiled objects and modules
+*.a
+*.o
+*.mod
+*.log
+*.out
+
+# Source build
+build
+temp
+CMakeFiles
+.idea
+cmake-build-debug
