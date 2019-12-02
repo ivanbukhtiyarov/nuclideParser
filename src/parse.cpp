@@ -5,6 +5,7 @@ namespace openbps {
     std::string get_node_value(pugi::xml_node node, const char *name) {
         // Search for either an attribute or child tag and get the data as a char*.
         const pugi::char_t *value_char;
+        std::cout <<"I'm here!\n " << node.attribute(name).value();
         if (node.attribute(name)) {
             value_char = node.attribute(name).value();
         } else if (node.child(name)) {
@@ -138,8 +139,18 @@ namespace openbps {
     }
 
     Chain::Chain(pugi::xml_node node) {
+        
         size_t i = 0;
+        auto fc = node.first_child();
+        std::cout << "First attribute" << fc.first_attribute().value() << "ok\n";
+        for (pugi::xml_node tool = node.child("nuclide"); tool; tool = tool.next_sibling("nuclide"))
+        {
+            std::cout <<"I'm here!\n ";
+            std::cout << "name " << tool.attribute("name").value();
+            std::cout << "reactions " << tool.attribute("reactions").as_int()<< "'\n";
+        }
         for (pugi::xml_node tool : node.children("nuclide")) {
+            std::cout <<"Number is " << i << "Success !\n";
             name_idx.insert({get_node_value(tool, "name"), i});
             nuclides.push_back(parse_nuclide_(tool));
             i++;
