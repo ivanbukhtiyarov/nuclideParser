@@ -1,11 +1,12 @@
 #include "nuclide_class.h"
 #include "../extern/pugiData/pugixml.h"
+extern pugi::xml_document docx;
 namespace openbps {
-
+    
     std::string get_node_value(pugi::xml_node node, const char *name) {
         // Search for either an attribute or child tag and get the data as a char*.
         const pugi::char_t *value_char;
-        std::cout <<"I'm here!\n " << node.attribute(name).value();
+        std::cout <<"VALUE " << node.attribute(name).value();
         if (node.attribute(name)) {
             value_char = node.attribute(name).value();
         } else if (node.child(name)) {
@@ -53,13 +54,13 @@ namespace openbps {
     }
     // Read a chain from xml
     pugi::xml_node read_xml(const std::string& filename) {
-        pugi::xml_document doc;
-        auto result = doc.load_file(filename.c_str());
+        //pugi::xml_document doc;
+        auto result = docx.load_file(filename.c_str());
         if (!result) {
             std::cerr << "Error: file not found!" << std::endl;
         } 
 
-        pugi::xml_node chain_node = doc.child("depletion_chain");
+        pugi::xml_node chain_node = docx.child("depletion_chain");
         return chain_node;
     }
 
@@ -117,6 +118,7 @@ namespace openbps {
         temp.reactions = atoi(node.attribute("reactions").value());
         temp.half_life = 0;
         temp.half_life = atof(node.attribute("half_life").value());
+        std::cout << "Parse start for " << temp.name << std::endl;
         if (temp.decay_modes > 0) {
             temp.decay_energy = atof(node.attribute("decay_energy").value());
             for (pugi::xml_node tool : node.children("decay")) {
@@ -135,6 +137,7 @@ namespace openbps {
         if (node.child("neutron_fission_yields")) {
             temp.nfy = parse_nfy_(node.child("neutron_fission_yields"));
         }
+        std::cout << "Parse finish for " << temp.name << std::endl;
         return temp;
     }
 
@@ -143,18 +146,22 @@ namespace openbps {
         size_t i = 0;
         auto fc = node.first_child();
         std::cout << "First attribute" << fc.first_attribute().value() << "ok\n";
-        for (pugi::xml_node tool = node.child("nuclide"); tool; tool = tool.next_sibling("nuclide"))
+        /*for (pugi::xml_node tool = node.child("nuclide"); tool; tool = tool.next_sibling("nuclide"))
         {
-            std::cout <<"I'm here!\n ";
+            
             std::cout << "name " << tool.attribute("name").value();
             std::cout << "reactions " << tool.attribute("reactions").as_int()<< "'\n";
-        }
+            name_idx.insert({get_node_value(tool, "name"), i});
+            nuclides.push_back(parse_nuclide_(tool));
+            i++;
+        }*/
         for (pugi::xml_node tool : node.children("nuclide")) {
             std::cout <<"Number is " << i << "Success !\n";
             name_idx.insert({get_node_value(tool, "name"), i});
             nuclides.push_back(parse_nuclide_(tool));
             i++;
         }
+        std::cout <<"I'm here!\n ";
     }
 
 } // namespace openbps

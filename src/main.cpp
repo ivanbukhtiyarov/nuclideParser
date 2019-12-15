@@ -1,5 +1,6 @@
 #include "nuclide_class.h"
-
+#include "../extern/pugiData/pugixml.h"
+pugi::xml_document docx;
 int main(int arc, char *argv[]) {
     using namespace openbps;
     Timer t;
