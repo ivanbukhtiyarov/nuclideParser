@@ -1,5 +1,5 @@
 #include "nuclide_class.h"
-
+#include "configure.h"
 namespace openbps {
 
     std::vector<std::pair<int, std::string>> Chain::form_idx_name() {
@@ -140,6 +140,18 @@ and so on
             }
         }
         return out;
+    }
+
+    // Read a chain from xml
+    pugi::xml_node read_chain_xml(const std::string& filename) {
+        //pugi::xml_document doc;
+        auto result = configure::docx.load_file(filename.c_str());
+        if (!result) {
+            std::cerr << "Error: file not found!" << std::endl;
+        }
+
+        pugi::xml_node chain_node = configure::docx.child("depletion_chain");
+        return chain_node;
     }
 
 } // namespace close

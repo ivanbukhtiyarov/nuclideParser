@@ -19,6 +19,12 @@ namespace openbps {
         std::string value{value_char};
         return value;
     }
+   // Boolean value for function check_for_node
+   bool
+   check_for_node(pugi::xml_node node, const char *name)
+   {
+     return node.attribute(name) || node.child(name);
+   }
 
     bool get_node_value_bool(pugi::xml_node node, const char *name) {
         if (node.attribute(name)) {
@@ -52,17 +58,7 @@ namespace openbps {
         }
         return tokens;
     }
-    // Read a chain from xml
-    pugi::xml_node read_xml(const std::string& filename) {
-        //pugi::xml_document doc;
-        auto result = docx.load_file(filename.c_str());
-        if (!result) {
-            std::cerr << "Error: file not found!" << std::endl;
-        } 
 
-        pugi::xml_node chain_node = docx.child("depletion_chain");
-        return chain_node;
-    }
 
 //==============================================================================
 // Chain implementation
@@ -156,7 +152,6 @@ namespace openbps {
             i++;
         }*/
         for (pugi::xml_node tool : node.children("nuclide")) {
-            std::cout <<"Number is " << i << "Success !\n";
             name_idx.insert({get_node_value(tool, "name"), i});
             nuclides.push_back(parse_nuclide_(tool));
             i++;
