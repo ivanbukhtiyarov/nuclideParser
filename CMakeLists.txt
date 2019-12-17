@@ -11,8 +11,8 @@ include_directories(build)
 include_directories(extern)
 
 #add_library(pugixml extern/pugiData/pugixml.cpp)
-add_subdirectory(vendor/xtl)
-add_subdirectory(vendor/xtensor)
+add_subdirectory(extern/xtl)
+add_subdirectory(extern/xtensor)
 target_link_libraries(xtensor INTERFACE xtl)
 
 add_subdirectory(lib/googletest)
