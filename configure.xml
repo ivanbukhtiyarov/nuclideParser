@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<configure>
+
+  <chain>/home/yuri/BPSD/cpp/nuclideParser/Xmls/chain.xml</chain>
+  <reaction>/home/yuri/BPSD/cpp/nuclideParser/Xmls/reactions.xml</reaction>
+  <numbers>30</numbers>
+
+</configure>

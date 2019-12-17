@@ -11,27 +11,54 @@ include_directories(build)
 include_directories(extern)
 
 #add_library(pugixml extern/pugiData/pugixml.cpp)
+add_subdirectory(vendor/xtl)
+add_subdirectory(vendor/xtensor)
+target_link_libraries(xtensor INTERFACE xtl)
 
 add_subdirectory(lib/googletest)
 
 #Binary build
 
 add_executable(openbps "../src/nuclide_class.h"
+                       "../src/configure.h"
+                       "../src/functionals.h"
+                       "../src/reactions.h"
+                       "../src/executer.h"
+                       "../src/configure.cpp"
+                       "../src/functionals.cpp"
+                       "../src/reactions.cpp"
+                       "../src/executer.cpp"
                        "../src/parse.cpp"
                        "../src/form_output.cpp" 
                        "../src/main.cpp" 
                        "../extern/pugiData/pugixml.h" 
                        "../extern/pugiData/pugixml.cpp")
-add_library(openbps_lib STATIC "../src/nuclide_class.h" 
+add_library(openbps_lib STATIC "../src/nuclide_class.h"
+                               "../src/configure.h"
+                               "../src/functionals.h"
+                               "../src/reactions.h"
+                               "../src/executer.h"
+                               "../src/configure.cpp"
+                               "../src/functionals.cpp"
+                               "../src/reactions.cpp"
+                               "../src/executer.cpp"
                                "../src/parse.cpp"
-                               "../src/form_output.cpp" 
+                               "../src/form_output.cpp"  
                                "../src/main.cpp"
                                "../extern/pugiData/pugixml.h" 
                                "../extern/pugiData/pugixml.cpp")
 
 #Test build
 
-add_executable(o_tst  "../src/nuclide_class.h" 
+add_executable(o_tst  "../src/nuclide_class.h"
+                      "../src/configure.h"
+                      "../src/functionals.h"
+                      "../src/reactions.h"
+                      "../src/executer.h"
+                      "../src/configure.cpp"
+                      "../src/functionals.cpp"
+                      "../src/reactions.cpp"
+                      "../src/executer.cpp"
                       "../src/parse.cpp"
                       "../src/form_output.cpp" 
                       "../test/test.cpp"

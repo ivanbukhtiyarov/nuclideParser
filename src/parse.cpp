@@ -6,11 +6,13 @@ namespace openbps {
     std::string get_node_value(pugi::xml_node node, const char *name) {
         // Search for either an attribute or child tag and get the data as a char*.
         const pugi::char_t *value_char;
-        std::cout <<"VALUE " << node.attribute(name).value();
+        std::string nnode {node.name()};
         if (node.attribute(name)) {
             value_char = node.attribute(name).value();
         } else if (node.child(name)) {
             value_char = node.child_value(name);
+        } else if (nnode == name) {
+        	value_char = node.child_value();
         } else {
 
             std::cerr << "Node \"" << name << "\" is not a member of the \""

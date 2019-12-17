@@ -2,6 +2,7 @@
 #include "configure.h"
 #include "nuclide_class.h"
 #include "functionals.h"
+#include "reactions.h"
 
 namespace openbps {
 
@@ -42,6 +43,7 @@ void init_solver() {
 	    {
 	        std::cout << map[0.0253][i][0] << "  " << map[0.0253][i][1] << "  "<< map[0.0253][i][2] << "  " <<std::endl;
 	    }
+	    read_reactions_xml();
 
 }
 
