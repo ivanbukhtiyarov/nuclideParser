@@ -6,10 +6,10 @@
 #include "configure.h"
 #include "nuclide_class.h"
 #include "../extern/pugiData/pugixml.h"
-#include "xtensor/xarray.hpp"
-#include "xtensor/xadapt.hpp"
-//#include "../extern/xtensor/xarray.hpp"
-//#include "../extern/xtensor/xadapt.hpp"
+//#include "xtensor/xarray.hpp"
+//#include "xtensor/xadapt.hpp"
+#include "../extern/xtensor/xarray.hpp"
+#include "../extern/xtensor/xadapt.hpp"
 
 namespace openbps {
 
