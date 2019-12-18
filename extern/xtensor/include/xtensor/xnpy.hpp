@@ -1,7 +1,6 @@
 /***************************************************************************
-* Copyright (c) Johan Mabille, Sylvain Corlay and Wolf Vollprecht          *
-* Copyright Leon Merten Lohse
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Leon Merten Lohse, Johan Mabille, Sylvain Corlay and *
+*                     Wolf Vollprecht                                      *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -21,7 +20,6 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
-#include <memory>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
@@ -33,7 +31,6 @@
 #include "xtensor/xarray.hpp"
 #include "xtensor/xeval.hpp"
 #include "xtensor/xstrides.hpp"
-#include "xtensor_config.hpp"
 
 namespace xt
 {
@@ -77,24 +74,25 @@ namespace xt
                                unsigned char* v_major,
                                unsigned char* v_minor)
         {
-            std::unique_ptr<char[]> buf(new char[magic_string_length + 2]);
-            istream.read(buf.get(), magic_string_length + 2);
+            char* buf = new char[magic_string_length + 2];
+            istream.read(buf, magic_string_length + 2);
 
             if (!istream)
             {
-                XTENSOR_THROW(std::runtime_error, "io error: failed reading file");
+                throw std::runtime_error("io error: failed reading file");
             }
 
             for (std::size_t i = 0; i < magic_string_length; i++)
             {
                 if (buf[i] != magic_string[i])
                 {
-                    XTENSOR_THROW(std::runtime_error, "this file do not have a valid npy format.");
+                    throw std::runtime_error("this file do not have a valid npy format.");
                 }
             }
 
             *v_major = static_cast<unsigned char>(buf[magic_string_length]);
             *v_minor = static_cast<unsigned char>(buf[magic_string_length + 1]);
+            delete[] buf;
         }
 
         template <class T>
@@ -105,7 +103,6 @@ namespace xt
             if (std::is_same<T, long double>::value) return 'f';
 
             if (std::is_same<T, char>::value) return 'i';
-            if (std::is_same<T, signed char>::value) return 'i';
             if (std::is_same<T, short>::value) return 'i';
             if (std::is_same<T, int>::value) return 'i';
             if (std::is_same<T, long>::value) return 'i';
@@ -123,17 +120,17 @@ namespace xt
             if (std::is_same<T, std::complex<double>>::value) return 'c';
             if (std::is_same<T, std::complex<long double>>::value) return 'c';
 
-            XTENSOR_THROW(std::runtime_error, "Type not known.");
+            throw std::runtime_error("Type not known.");
         }
 
         template <class T>
-        constexpr char get_endianess()
+        constexpr inline char get_endianess()
         {
             return sizeof(T) <= sizeof(char) ? no_endian_char : host_endian_char;
         }
 
         template <class T>
-        inline std::string build_typestring()
+        std::string build_typestring()
         {
             std::stringstream ss;
             ss << get_endianess<T>() << map_type<T>() << sizeof(T);
@@ -149,7 +146,7 @@ namespace xt
             std::regex_match(typestring, sm, re);
             if (sm.size() != 4)
             {
-                XTENSOR_THROW(std::runtime_error, "invalid typestring");
+                throw std::runtime_error("invalid typestring");
             }
         }
 
@@ -162,7 +159,7 @@ namespace xt
             }
             else
             {
-                XTENSOR_THROW(std::runtime_error, "unable to unwrap");
+                throw std::runtime_error("unable to unwrap");
             }
         }
 
@@ -224,7 +221,7 @@ namespace xt
             // remove trailing newline
             if (header.back() != '\n')
             {
-                XTENSOR_THROW(std::runtime_error, "invalid header");
+                throw std::runtime_error("invalid header");
             }
             header.pop_back();
 
@@ -242,15 +239,15 @@ namespace xt
             // make sure all the keys are present
             if (keypos_descr == std::string::npos)
             {
-                XTENSOR_THROW(std::runtime_error, "missing 'descr' key");
+                throw std::runtime_error("missing 'descr' key");
             }
             if (keypos_fortran == std::string::npos)
             {
-                XTENSOR_THROW(std::runtime_error, "missing 'fortran_order' key");
+                throw std::runtime_error("missing 'fortran_order' key");
             }
             if (keypos_shape == std::string::npos)
             {
-                XTENSOR_THROW(std::runtime_error, "missing 'shape' key");
+                throw std::runtime_error("missing 'shape' key");
             }
 
             // Make sure the keys are in order.
@@ -259,7 +256,7 @@ namespace xt
             // TODO: fix
             if (keypos_descr >= keypos_fortran || keypos_fortran >= keypos_shape)
             {
-                XTENSOR_THROW(std::runtime_error, "header keys in wrong order");
+                throw std::runtime_error("header keys in wrong order");
             }
 
             // get the 3 key-value pairs
@@ -294,7 +291,7 @@ namespace xt
             }
             else
             {
-                XTENSOR_THROW(std::runtime_error, "invalid fortran_order value");
+                throw std::runtime_error("invalid fortran_order value");
             }
 
             // parse the shape Python tuple ( x, y, z,)
@@ -319,11 +316,13 @@ namespace xt
                     dim_s = shape_s.substr(pos);
                 }
 
+                pop_char(dim_s, ',');
+
                 if (dim_s.length() == 0)
                 {
                     if (pos_next != std::string::npos)
                     {
-                        XTENSOR_THROW(std::runtime_error, "invalid shape");
+                        throw std::runtime_error("invalid shape");
                     }
                 }
                 else
@@ -441,9 +440,10 @@ namespace xt
                 // TODO: display warning
             }
 
-            std::unique_ptr<char[]> buf(new char[header_length]);
-            istream.read(buf.get(), header_length);
-            std::string header(buf.get(), header_length);
+            char* buf = new char[header_length];
+            istream.read(buf, header_length);
+            std::string header(buf, header_length);
+            delete[] buf;
 
             return header;
         }
@@ -462,9 +462,10 @@ namespace xt
                 // TODO: display warning
             }
 
-            std::unique_ptr<char[]> buf(new char[header_length]);
-            istream.read(buf.get(), header_length);
-            std::string header(buf.get(), header_length);
+            char* buf = new char[header_length];
+            istream.read(buf, header_length);
+            std::string header(buf, header_length);
+            delete[] buf;
 
             return header;
         }
@@ -480,14 +481,14 @@ namespace xt
                 // Allocate memory
                 m_word_size = std::size_t(atoi(&typestring[2]));
                 m_n_bytes = compute_size(shape) * m_word_size;
-                m_buffer = std::allocator<char>{}.allocate(m_n_bytes);
+                m_buffer = new char[m_n_bytes];
             }
 
             ~npy_file()
             {
                 if (m_buffer != nullptr)
                 {
-                    std::allocator<char>{}.deallocate(m_buffer, m_n_bytes);
+                    delete m_buffer;
                 }
             }
 
@@ -527,7 +528,7 @@ namespace xt
             {
                 if (m_buffer == nullptr)
                 {
-                    XTENSOR_THROW(std::runtime_error, "This npy_file has already been cast.");
+                    throw std::runtime_error("This npy_file has already been cast.");
                 }
                 T* ptr = reinterpret_cast<T*>(&m_buffer[0]);
                 std::vector<std::size_t> strides(m_shape.size());
@@ -536,15 +537,14 @@ namespace xt
                 // check if the typestring matches the given one
                 if (check_type && m_typestring != detail::build_typestring<T>())
                 {
-                    XTENSOR_THROW(std::runtime_error,
-                                  "Cast error: formats not matching "s + m_typestring +
-                                  " vs "s + detail::build_typestring<T>());
+                    throw std::runtime_error("Cast error: formats not matching "s + m_typestring +
+                                             " vs "s + detail::build_typestring<T>());
                 }
 
                 if ((L == layout_type::column_major && !m_fortran_order) ||
                     (L == layout_type::row_major && m_fortran_order))
                 {
-                    XTENSOR_THROW(std::runtime_error, "Cast error: layout mismatch between npy file and requested layout.");
+                    throw std::runtime_error("Cast error: layout mismatch between npy file and requested layout.");
                 }
 
                 compute_strides(m_shape,
@@ -592,13 +592,13 @@ namespace xt
 
             std::vector<std::size_t> m_shape;
             bool m_fortran_order;
-            std::size_t m_word_size;
-            std::size_t m_n_bytes;
+            size_t m_word_size;
+            size_t m_n_bytes;
             std::string m_typestring;
             char* m_buffer;
         };
 
-        inline npy_file load_npy_file(std::istream& stream)
+        npy_file load_npy_file(std::istream& stream)
         {
             // check magic bytes an version number
             unsigned char v_major, v_minor;
@@ -616,7 +616,7 @@ namespace xt
             }
             else
             {
-                XTENSOR_THROW(std::runtime_error, "unsupported file format version");
+                throw std::runtime_error("unsupported file format version");
             }
 
             // parse header
@@ -633,7 +633,7 @@ namespace xt
         }
 
         template <class O, class E>
-        inline void dump_npy_stream(O& stream, const xexpression<E>& e)
+        void dump_npy_stream(O& stream, const xexpression<E>& e)
         {
             using value_type = typename E::value_type;
             const E& ex = e.derived_cast();
@@ -663,45 +663,15 @@ namespace xt
      * @param e the xexpression
      */
     template <typename E>
-    inline void dump_npy(const std::string& filename, const xexpression<E>& e)
+    void dump_npy(const std::string& filename, const xexpression<E>& e)
     {
         std::ofstream stream(filename, std::ofstream::binary);
         if (!stream)
         {
-            XTENSOR_THROW(std::runtime_error, "IO Error: failed to open file: "s + filename);
+            throw std::runtime_error("IO Error: failed to open file: "s + filename);
         }
 
         detail::dump_npy_stream(stream, e);
-    }
-
-    /**
-     * Save xexpression to NumPy npy format in a string
-     *
-     * @param e the xexpression
-     */
-    template <typename E>
-    inline std::string dump_npy(const xexpression<E>& e)
-    {
-        std::stringstream stream;
-        detail::dump_npy_stream(stream, e);
-        return stream.str();
-    }
-
-    /**
-     * Loads a npy file (the numpy storage format)
-     *
-     * @param stream An input stream from which to load the file
-     * @tparam T select the type of the npy file (note: currently there is
-     *           no dynamic casting if types do not match)
-     * @tparam L select layout_type::column_major if you stored data in
-     *           Fortran format
-     * @return xarray with contents from npy file
-     */
-    template <typename T, layout_type L = layout_type::dynamic>
-    inline auto load_npy(std::istream& stream)
-    {
-        detail::npy_file file = detail::load_npy_file(stream);
-        return std::move(file).cast<T, L>();
     }
 
     /**
@@ -715,14 +685,15 @@ namespace xt
      * @return xarray with contents from npy file
      */
     template <typename T, layout_type L = layout_type::dynamic>
-    inline auto load_npy(const std::string& filename)
+    auto load_npy(const std::string& filename)
     {
         std::ifstream stream(filename, std::ifstream::binary);
         if (!stream)
         {
-            XTENSOR_THROW(std::runtime_error, "io error: failed to open a file.");
+            throw std::runtime_error("io error: failed to open a file.");
         }
-        return load_npy<T, L>(stream);
+        detail::npy_file file = detail::load_npy_file(stream);
+        return std::move(file).cast<T, L>();
     }
 
 }  // namespace xt

@@ -1,6 +1,5 @@
 /***************************************************************************
-* Copyright (c) Johan Mabille, Sylvain Corlay and Wolf Vollprecht          *
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Johan Mabille, Sylvain Corlay and Wolf Vollprecht    *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -12,7 +11,6 @@
 
 #include <array>
 #include <vector>
-#include <algorithm>
 
 #include "xclosure.hpp"
 #include "xcomplex.hpp"

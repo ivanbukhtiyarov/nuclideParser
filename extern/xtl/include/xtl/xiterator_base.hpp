@@ -1,6 +1,5 @@
 /***************************************************************************
-* Copyright (c) Johan Mabille, Sylvain Corlay and Wolf Vollprecht          *
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Sylvain Corlay and Johan Mabille                     *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -50,17 +49,25 @@ namespace xtl
         {
             return !(lhs == rhs);
         }
-   };
+
+        inline friend bool operator<=(const derived_type& lhs, const derived_type& rhs)
+        {
+            return !(rhs < lhs);
+        }
+
+        inline friend bool operator>=(const derived_type& lhs, const derived_type& rhs)
+        {
+            return !(lhs < rhs);
+        }
+
+        inline friend bool operator>(const derived_type& lhs, const derived_type& rhs)
+        {
+            return rhs < lhs;
+        }
+    };
 
     template <class T>
     using xbidirectional_iterator_base2 = xbidirectional_iterator_base<typename T::iterator_type,
-                                                                       typename T::value_type,
-                                                                       typename T::difference_type,
-                                                                       typename T::pointer,
-                                                                       typename T::reference>;
-
-    template <class I, class T>
-    using xbidirectional_iterator_base3 = xbidirectional_iterator_base<I,
                                                                        typename T::value_type,
                                                                        typename T::difference_type,
                                                                        typename T::pointer,
@@ -104,22 +111,6 @@ namespace xtl
             derived_type tmp(it);
             return tmp -= n;
         }
-
-        inline friend bool operator<=(const derived_type& lhs, const derived_type& rhs)
-        {
-            return !(rhs < lhs);
-        }
-
-        inline friend bool operator>=(const derived_type& lhs, const derived_type& rhs)
-        {
-            return !(lhs < rhs);
-        }
-
-        inline friend bool operator>(const derived_type& lhs, const derived_type& rhs)
-        {
-            return rhs < lhs;
-        }
- 
     };
 
     template <class T>
@@ -128,52 +119,6 @@ namespace xtl
                                                                        typename T::difference_type,
                                                                        typename T::pointer,
                                                                        typename T::reference>;
-
-    template <class I, class T>
-    using xrandom_access_iterator_base3 = xrandom_access_iterator_base<I,
-                                                                       typename T::value_type,
-                                                                       typename T::difference_type,
-                                                                       typename T::pointer,
-                                                                       typename T::reference>;
-
-    /*******************************
-     * xrandom_access_iterator_ext *
-     *******************************/
-
-    // Extension for random access iterators defining operator[] and operator+ overloads
-    // accepting size_t arguments.
-    template <class I, class R>
-    class xrandom_access_iterator_ext
-    {
-    public:
-
-        using derived_type = I;
-        using reference = R;
-        using size_type = std::size_t;
-
-        inline reference operator[](size_type n) const
-        {
-            return *(*static_cast<const derived_type*>(this) + n);
-        }
-
-        inline friend derived_type operator+(const derived_type& it, size_type n)
-        {
-            derived_type tmp(it);
-            return tmp += n;
-        }
-
-        inline friend derived_type operator+(size_type n, const derived_type& it)
-        {
-            derived_type tmp(it);
-            return tmp += n;
-        }
-
-        inline friend derived_type operator-(const derived_type& it, size_type n)
-        {
-            derived_type tmp(it);
-            return tmp -= n;
-        }
-    };
 
     /*****************
      * xkey_iterator *
@@ -225,109 +170,15 @@ namespace xtl
             return m_it == rhs.m_it;
         }
 
-    private:
-
-        subiterator m_it;
-    };
-
-    /**********************
-     * xstepping_iterator *
-     **********************/
-
-    template <class It>
-    class xstepping_iterator : public xrandom_access_iterator_base3<xstepping_iterator<It>,
-                                                                    std::iterator_traits<It>>
-    {
-    public:
-
-        using self_type = xstepping_iterator;
-        using base_type = xrandom_access_iterator_base3<self_type, std::iterator_traits<It>>;
-        using value_type = typename base_type::value_type;
-        using reference = typename base_type::reference;
-        using pointer = typename base_type::pointer;
-        using difference_type = typename base_type::difference_type;
-        using iterator_category = typename base_type::iterator_category;
-        using subiterator = It;
-
-        xstepping_iterator() = default;
-
-        inline xstepping_iterator(subiterator it, difference_type step) noexcept
-            : m_it(it), m_step(step)
+        inline bool operator<(const self_type& rhs) const
         {
-        }
-
-        inline self_type& operator++()
-        {
-            std::advance(m_it, m_step);
-            return *this;
-        }
-
-        inline self_type& operator--()
-        {
-            std::advance(m_it, -m_step);
-            return *this;
-        }
-
-        inline self_type& operator+=(difference_type n)
-        {
-            std::advance(m_it, n*m_step);
-            return *this;
-        }
-
-        inline self_type& operator-=(difference_type n)
-        {
-            std::advance(m_it, -n*m_step);
-            return *this;
-        }
-
-        inline difference_type operator-(const self_type& rhs) const
-        {
-            return std::distance(rhs.m_it, m_it) / m_step;
-        }
-
-        inline reference operator*() const
-        {
-            return *m_it;
-        }
-
-        inline pointer operator->() const
-        {
-            return m_it;
-        }
-
-        inline bool equal(const self_type& rhs) const
-        {
-            return m_it == rhs.m_it && m_step == rhs.m_step;
-        }
-
-        inline bool less_than(const self_type& rhs) const
-        {
-            return m_it < rhs.m_it && m_step == rhs.m_step;
+            return m_it < rhs.m_it;
         }
 
     private:
 
         subiterator m_it;
-        difference_type m_step;
     };
-
-    template <class It>
-    inline bool operator==(const xstepping_iterator<It>& lhs, const xstepping_iterator<It>& rhs)
-    {
-        return lhs.equal(rhs);
-    }
-
-    template <class It>
-    inline bool operator<(const xstepping_iterator<It>& lhs, const xstepping_iterator<It>& rhs)
-    {
-        return lhs.less_than(rhs);
-    }
-
-    template <class It>
-    inline xstepping_iterator<It> make_stepping_iterator(It it, typename std::iterator_traits<It>::difference_type step)
-    {
-        return xstepping_iterator<It>(it, step);
-    }
 
     /***********************
      * common_iterator_tag *

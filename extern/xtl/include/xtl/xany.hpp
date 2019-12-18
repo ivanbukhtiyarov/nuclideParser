@@ -1,6 +1,5 @@
 /***************************************************************************
-* Copyright (c) Sylvain Corlay and Johan Mabille and Wolf Vollprecht       *
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Sylvain Corlay and Johan Mabille                     *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -36,19 +35,6 @@ namespace xtl
             return "bad any cast";
         }
     };
-
-    namespace detail {
-        inline static void check_any_cast(const void* p) {
-            if (p == nullptr) {
-#if defined(XTL_NO_EXCEPTIONS)
-                std::fprintf(stderr, "bad_any_cast\n");
-                std::terminate();        
-#else
-                throw bad_any_cast();
-#endif
-            }
-        }
-    } // namespace detail
 
     class any final
     {
@@ -392,7 +378,8 @@ namespace xtl
     inline ValueType any_cast(const any& operand)
     {
         auto p = any_cast<typename std::add_const<typename std::remove_reference<ValueType>::type>::type>(&operand);
-        detail::check_any_cast(p);
+        if (p == nullptr)
+            throw bad_any_cast();
         return *p;
     }
 
@@ -401,7 +388,8 @@ namespace xtl
     inline ValueType any_cast(any& operand)
     {
         auto p = any_cast<typename std::remove_reference<ValueType>::type>(&operand);
-        detail::check_any_cast(p);
+        if (p == nullptr)
+            throw bad_any_cast();
         return *p;
     }
 
@@ -426,7 +414,8 @@ namespace xtl
 #endif
 
         auto p = any_cast<typename std::remove_reference<ValueType>::type>(&operand);
-        detail::check_any_cast(p);
+        if (p == nullptr)
+            throw bad_any_cast();
         return detail::any_cast_move_if_true<ValueType>(p, can_move());
     }
 

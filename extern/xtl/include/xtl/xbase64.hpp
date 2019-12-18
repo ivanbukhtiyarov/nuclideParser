@@ -1,6 +1,5 @@
 /***************************************************************************
-* Copyright (c) Sylvain Corlay and Johan Mabille and Wolf Vollprecht       *
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Sylvain Corlay and Johan Mabille                     *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -52,9 +51,8 @@ namespace xtl
         std::string output;
         int val = 0;
         int valb = -6;
-        for (char sc : input)
+        for (unsigned char c : input)
         {
-            unsigned char c = static_cast<unsigned char>(sc);
             val = (val << 8) + c;
             valb += 8;
             while (valb >= 0)

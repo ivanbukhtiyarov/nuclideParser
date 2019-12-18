@@ -1,6 +1,5 @@
 /***************************************************************************
-* Copyright (c) Johan Mabille, Sylvain Corlay and Wolf Vollprecht          *
-* Copyright (c) QuantStack                                                 *
+* Copyright (c) 2016, Johan Mabille, Sylvain Corlay and Wolf Vollprecht    *
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
@@ -16,7 +15,6 @@
 
 #include <xtl/xtype_traits.hpp>
 
-#include "xaccessible.hpp"
 #include "xexpression.hpp"
 #include "xiterable.hpp"
 #include "xlayout.hpp"
@@ -25,37 +23,11 @@
 namespace xt
 {
 
-    /*********************
-     * xscalar extension *
-     *********************/
-
-    namespace extension
-    {
-        template <class Tag, class CT>
-        struct xscalar_base_impl;
-
-        template <class CT>
-        struct xscalar_base_impl<xtensor_expression_tag, CT>
-        {
-            using type = xtensor_empty_base;
-        };
-
-        template <class CT>
-        struct xscalar_base : xscalar_base_impl<get_expression_tag_t<std::decay_t<CT>>, CT>
-        {
-        };
-
-        template <class CT>
-        using xscalar_base_t = typename xscalar_base<CT>::type;
-    }
-
     /***********
      * xscalar *
      ***********/
 
     // xscalar is a cheap wrapper for a scalar value as an xexpression.
-    template <class CT>
-    class xscalar;
 
     template <bool is_const, class CT>
     class xscalar_stepper;
@@ -64,52 +36,39 @@ namespace xt
     class xdummy_iterator;
 
     template <class CT>
+    class xscalar;
+
+    template <class CT>
     struct xiterable_inner_types<xscalar<CT>>
     {
         using value_type = std::decay_t<CT>;
         using inner_shape_type = std::array<std::size_t, 0>;
-        using shape_type = inner_shape_type;
         using const_stepper = xscalar_stepper<true, CT>;
         using stepper = xscalar_stepper<false, CT>;
     };
 
+#define DL XTENSOR_DEFAULT_LAYOUT
     template <class CT>
-    struct xcontainer_inner_types<xscalar<CT>>
-    {
-        using value_type = std::decay_t<CT>;
-        using reference = value_type&;
-        using const_reference = const value_type&;
-        using size_type = std::size_t;
-    };
-
-    template <class CT>
-    class xscalar : public xsharable_expression<xscalar<CT>>,
-                    private xiterable<xscalar<CT>>,
-                    private xaccessible<xscalar<CT>>,
-                    public extension::xscalar_base_t<CT>
+    class xscalar : public xexpression<xscalar<CT>>,
+                    private xiterable<xscalar<CT>>
     {
     public:
 
         using self_type = xscalar<CT>;
-        using xexpression_type = std::decay_t<CT>;
-        using extension_base = extension::xscalar_base_t<CT>;
-        using accessible_base = xaccessible<self_type>;
-        using expression_tag = typename extension_base::expression_tag;
-        using inner_types = xcontainer_inner_types<self_type>;
 
-        using value_type = typename inner_types::value_type;
-        using reference = typename inner_types::reference;
-        using const_reference = typename inner_types::const_reference;
+        using value_type = std::decay_t<CT>;
+        using reference = value_type&;
+        using const_reference = const value_type&;
         using pointer = value_type*;
         using const_pointer = const value_type*;
-        using size_type = typename inner_types::size_type;
+        using size_type = std::size_t;
         using difference_type = std::ptrdiff_t;
-        using simd_value_type = xt_simd::simd_type<value_type>;
-        using bool_load_type = xt::bool_load_type<value_type>;
+        using simd_value_type = xsimd::simd_type<value_type>;
 
         using iterable_base = xiterable<self_type>;
         using inner_shape_type = typename iterable_base::inner_shape_type;
         using shape_type = inner_shape_type;
+        using expression_tag = xscalar_expression_tag;
 
         using stepper = typename iterable_base::stepper;
         using const_stepper = typename iterable_base::const_stepper;
@@ -152,27 +111,33 @@ namespace xt
         operator const value_type&() const noexcept;
 
         size_type size() const noexcept;
+        size_type dimension() const noexcept;
         const shape_type& shape() const noexcept;
-        size_type shape(size_type i) const noexcept;
         layout_type layout() const noexcept;
-        bool is_contiguous() const noexcept;
-        using accessible_base::dimension;
-        using accessible_base::shape;
 
         template <class... Args>
         reference operator()(Args...) noexcept;
         template <class... Args>
+        reference at(Args...);
+        template <class... Args>
         reference unchecked(Args...) noexcept;
+        template <class S>
+        disable_integral_t<S, reference> operator[](const S&) noexcept;
+        template <class I>
+        reference operator[](std::initializer_list<I>) noexcept;
+        reference operator[](size_type) noexcept;
 
         template <class... Args>
         const_reference operator()(Args...) const noexcept;
         template <class... Args>
+        const_reference at(Args...) const;
+        template <class... Args>
         const_reference unchecked(Args...) const noexcept;
-
-        using accessible_base::at;
-        using accessible_base::operator[];
-        using accessible_base::periodic;
-        using accessible_base::in_bounds;
+        template <class S>
+        disable_integral_t<S, const_reference> operator[](const S&) const noexcept;
+        template <class I>
+        const_reference operator[](std::initializer_list<I>) const noexcept;
+        const_reference operator[](size_type) const noexcept;
 
         template <class It>
         reference element(It, It) noexcept;
@@ -180,86 +145,95 @@ namespace xt
         template <class It>
         const_reference element(It, It) const noexcept;
 
-        xexpression_type& expression() noexcept;
-        const xexpression_type& expression() const noexcept;
-
         template <class S>
         bool broadcast_shape(S& shape, bool reuse_cache = false) const noexcept;
 
         template <class S>
-        bool has_linear_assign(const S& strides) const noexcept;
+        bool is_trivial_broadcast(const S& strides) const noexcept;
 
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         iterator begin() noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         iterator end() noexcept;
 
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_iterator begin() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_iterator end() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_iterator cbegin() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_iterator cend() const noexcept;
 
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         reverse_iterator rbegin() noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         reverse_iterator rend() noexcept;
 
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_reverse_iterator rbegin() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_reverse_iterator rend() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_reverse_iterator crbegin() const noexcept;
-        template <layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <layout_type L = DL>
         const_reverse_iterator crend() const noexcept;
 
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         broadcast_iterator<S, L> begin(const S& shape) noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         broadcast_iterator<S, L> end(const S& shape) noexcept;
 
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_broadcast_iterator<S, L> begin(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_broadcast_iterator<S, L> end(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_broadcast_iterator<S, L> cbegin(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_broadcast_iterator<S, L> cend(const S& shape) const noexcept;
 
 
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         reverse_broadcast_iterator<S, L> rbegin(const S& shape) noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         reverse_broadcast_iterator<S, L> rend(const S& shape) noexcept;
 
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_reverse_broadcast_iterator<S, L> rbegin(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_reverse_broadcast_iterator<S, L> rend(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_reverse_broadcast_iterator<S, L> crbegin(const S& shape) const noexcept;
-        template <class S, layout_type L = XTENSOR_DEFAULT_TRAVERSAL>
+        template <class S, layout_type L = DL>
         const_reverse_broadcast_iterator<S, L> crend(const S& shape) const noexcept;
 
+        template <layout_type L = DL>
         iterator storage_begin() noexcept;
+        template <layout_type L = DL>
         iterator storage_end() noexcept;
 
+        template <layout_type L = DL>
         const_iterator storage_begin() const noexcept;
+        template <layout_type L = DL>
         const_iterator storage_end() const noexcept;
+        template <layout_type L = DL>
         const_iterator storage_cbegin() const noexcept;
+        template <layout_type L = DL>
         const_iterator storage_cend() const noexcept;
 
+        template <layout_type L = DL>
         reverse_iterator storage_rbegin() noexcept;
+        template <layout_type L = DL>
         reverse_iterator storage_rend() noexcept;
 
+        template <layout_type L = DL>
         const_reverse_iterator storage_rbegin() const noexcept;
+        template <layout_type L = DL>
         const_reverse_iterator storage_rend() const noexcept;
+        template <layout_type L = DL>
         const_reverse_iterator storage_crbegin() const noexcept;
+        template <layout_type L = DL>
         const_reverse_iterator storage_crend() const noexcept;
 
         template <class S>
@@ -283,10 +257,8 @@ namespace xt
 
         template <class align, class simd = simd_value_type>
         void store_simd(size_type i, const simd& e);
-        template <class align, class requested_type = value_type,
-                  std::size_t N = xt_simd::simd_traits<requested_type>::size>
-        xt_simd::simd_return_type<value_type, requested_type>
-        load_simd(size_type i) const;
+        template <class align, class simd = simd_value_type>
+        simd load_simd(size_type i) const;
 
     private:
 
@@ -294,9 +266,8 @@ namespace xt
 
         friend class xconst_iterable<self_type>;
         friend class xiterable<self_type>;
-        friend class xaccessible<self_type>;
-        friend class xconst_accessible<self_type>;
     };
+#undef DL
 
     namespace detail
     {
@@ -364,9 +335,6 @@ namespace xt
         using size_type = typename storage_type::size_type;
         using difference_type = typename storage_type::difference_type;
 
-        template <class requested_type>
-        using simd_return_type = xt_simd::simd_return_type<value_type, requested_type>;
-
         xscalar_stepper(storage_type* c) noexcept;
 
         reference operator*() const noexcept;
@@ -379,10 +347,10 @@ namespace xt
         void to_begin() noexcept;
         void to_end(layout_type l) noexcept;
 
-        template <class T>
-        simd_return_type<T> step_simd();
+        template <class R>
+        R step_simd();
 
-        void step_leading();
+        value_type step_leading();
 
     private:
 
@@ -455,42 +423,35 @@ namespace xt
     bool operator<(const xdummy_iterator<is_const, CT>& lhs,
                    const xdummy_iterator<is_const, CT>& rhs) noexcept;
 
-    template <class T>
-    struct is_not_xdummy_iterator : std::true_type
-    {
-    };
+    /*******************************
+     * trivial_begin / trivial_end *
+     *******************************/
 
-    template <bool is_const, class CT>
-    struct is_not_xdummy_iterator<xdummy_iterator<is_const, CT>> : std::false_type
+    namespace detail
     {
-    };
+        template <class CT>
+        constexpr auto trivial_begin(xscalar<CT>& c) noexcept -> decltype(c.dummy_begin())
+        {
+            return c.dummy_begin();
+        }
 
-    /*****************************
-     * linear_begin / linear_end *
-     *****************************/
+        template <class CT>
+        constexpr auto trivial_end(xscalar<CT>& c) noexcept -> decltype(c.dummy_end())
+        {
+            return c.dummy_end();
+        }
 
-    template <class CT>
-    XTENSOR_CONSTEXPR_RETURN auto linear_begin(xscalar<CT>& c) noexcept -> decltype(c.dummy_begin())
-    {
-        return c.dummy_begin();
-    }
+        template <class CT>
+        constexpr auto trivial_begin(const xscalar<CT>& c) noexcept -> decltype(c.dummy_begin())
+        {
+            return c.dummy_begin();
+        }
 
-    template <class CT>
-    XTENSOR_CONSTEXPR_RETURN auto linear_end(xscalar<CT>& c) noexcept -> decltype(c.dummy_end())
-    {
-        return c.dummy_end();
-    }
-
-    template <class CT>
-    XTENSOR_CONSTEXPR_RETURN auto linear_begin(const xscalar<CT>& c) noexcept -> decltype(c.dummy_begin())
-    {
-        return c.dummy_begin();
-    }
-
-    template <class CT>
-    XTENSOR_CONSTEXPR_RETURN auto linear_end(const xscalar<CT>& c) noexcept -> decltype(c.dummy_end())
-    {
-        return c.dummy_end();
+        template <class CT>
+        constexpr auto trivial_end(const xscalar<CT>& c) noexcept -> decltype(c.dummy_end())
+        {
+            return c.dummy_end();
+        }
     }
 
     /**************************
@@ -529,6 +490,12 @@ namespace xt
     }
 
     template <class CT>
+    inline auto xscalar<CT>::dimension() const noexcept -> size_type
+    {
+        return 0;
+    }
+
+    template <class CT>
     inline auto xscalar<CT>::shape() const noexcept -> const shape_type&
     {
         static std::array<size_type, 0> zero_shape;
@@ -536,21 +503,9 @@ namespace xt
     }
 
     template <class CT>
-    inline auto xscalar<CT>::shape(size_type) const noexcept -> size_type
-    {
-        return 0;
-    }
-
-    template <class CT>
     inline layout_type xscalar<CT>::layout() const noexcept
     {
         return static_layout;
-    }
-
-    template <class CT>
-    inline bool xscalar<CT>::is_contiguous() const noexcept
-    {
-        return true;
     }
 
     template <class CT>
@@ -563,7 +518,37 @@ namespace xt
 
     template <class CT>
     template <class... Args>
+    inline auto xscalar<CT>::at(Args... args) -> reference
+    {
+        check_dimension(shape(), args...);
+        return this->operator()(args...);
+    }
+
+    template <class CT>
+    template <class... Args>
     inline auto xscalar<CT>::unchecked(Args...) noexcept -> reference
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    template <class S>
+    inline auto xscalar<CT>::operator[](const S&) noexcept
+        -> disable_integral_t<S, reference>
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    template <class I>
+    inline auto xscalar<CT>::operator[](std::initializer_list<I>) noexcept
+        -> reference
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    inline auto xscalar<CT>::operator[](size_type) noexcept -> reference
     {
         return m_value;
     }
@@ -578,7 +563,37 @@ namespace xt
 
     template <class CT>
     template <class... Args>
+    inline auto xscalar<CT>::at(Args... args) const -> const_reference
+    {
+        check_dimension(shape(), args...);
+        return this->operator()(args...);
+    }
+
+    template <class CT>
+    template <class... Args>
     inline auto xscalar<CT>::unchecked(Args...) const noexcept -> const_reference
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    template <class S>
+    inline auto xscalar<CT>::operator[](const S&) const noexcept
+        -> disable_integral_t<S, const_reference>
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    template <class I>
+    inline auto xscalar<CT>::operator[](std::initializer_list<I>) const noexcept
+        -> const_reference
+    {
+        return m_value;
+    }
+
+    template <class CT>
+    inline auto xscalar<CT>::operator[](size_type) const noexcept -> const_reference
     {
         return m_value;
     }
@@ -598,18 +613,6 @@ namespace xt
     }
 
     template <class CT>
-    inline auto xscalar<CT>::expression() noexcept -> xexpression_type&
-    {
-        return m_value;
-    }
-
-    template <class CT>
-    inline auto xscalar<CT>::expression() const noexcept -> const xexpression_type&
-    {
-        return m_value;
-    }
-
-    template <class CT>
     template <class S>
     inline bool xscalar<CT>::broadcast_shape(S&, bool) const noexcept
     {
@@ -618,7 +621,7 @@ namespace xt
 
     template <class CT>
     template <class S>
-    inline bool xscalar<CT>::has_linear_assign(const S&) const noexcept
+    inline bool xscalar<CT>::is_trivial_broadcast(const S&) const noexcept
     {
         return true;
     }
@@ -669,14 +672,14 @@ namespace xt
     template <layout_type L>
     inline auto xscalar<CT>::rbegin() noexcept -> reverse_iterator
     {
-        return reverse_iterator(end());
+        return reverse_storage_iterator(end());
     }
 
     template <class CT>
     template <layout_type L>
     inline auto xscalar<CT>::rend() noexcept -> reverse_iterator
     {
-        return reverse_iterator(begin());
+        return reverse_storage_iterator(begin());
     }
 
     template <class CT>
@@ -697,14 +700,14 @@ namespace xt
     template <layout_type L>
     inline auto xscalar<CT>::crbegin() const noexcept -> const_reverse_iterator
     {
-        return const_reverse_iterator(cend());
+        return const_reverse_storage_iterator(cend());
     }
 
     template <class CT>
     template <layout_type L>
     inline auto xscalar<CT>::crend() const noexcept -> const_reverse_iterator
     {
-        return const_reverse_iterator(cbegin());
+        return const_reverse_storage_iterator(cbegin());
     }
 
     /*****************************
@@ -796,75 +799,87 @@ namespace xt
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_begin() noexcept -> iterator
     {
-        return this->template begin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template begin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_end() noexcept -> iterator
     {
-        return this->template end<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template end<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_begin() const noexcept -> const_iterator
     {
-        return this->template begin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template begin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_end() const noexcept -> const_iterator
     {
-        return this->template end<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template end<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_cbegin() const noexcept -> const_iterator
     {
-        return this->template cbegin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template cbegin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_cend() const noexcept -> const_iterator
     {
-        return this->template cend<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template cend<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_rbegin() noexcept -> reverse_iterator
     {
-        return this->template rbegin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template rbegin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_rend() noexcept -> reverse_iterator
     {
-        return this->template rend<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template rend<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_rbegin() const noexcept -> const_reverse_iterator
     {
-        return this->template rbegin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template rbegin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_rend() const noexcept -> const_reverse_iterator
     {
-        return this->template rend<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template rend<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_crbegin() const noexcept -> const_reverse_iterator
     {
-        return this->template crbegin<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template crbegin<L>();
     }
 
     template <class CT>
+    template <layout_type L>
     inline auto xscalar<CT>::storage_crend() const noexcept -> const_reverse_iterator
     {
-        return this->template crend<XTENSOR_DEFAULT_LAYOUT>();
+        return this->template crend<L>();
     }
 
     template <class CT>
@@ -939,11 +954,10 @@ namespace xt
     }
 
     template <class CT>
-    template <class align, class requested_type, std::size_t N>
-    inline auto xscalar<CT>::load_simd(size_type) const
-        -> xt_simd::simd_return_type<value_type, requested_type>
+    template <class align, class simd>
+    inline auto xscalar<CT>::load_simd(size_type) const -> simd
     {
-        return xt_simd::set_simd<value_type, requested_type>(m_value);
+        return xsimd::set_simd<value_type, typename simd::value_type>(m_value);
     }
 
     template <class T>
@@ -1005,15 +1019,17 @@ namespace xt
     }
 
     template <bool is_const, class CT>
-    template <class T>
-    inline auto xscalar_stepper<is_const, CT>::step_simd() -> simd_return_type<T>
+    template <class R>
+    inline R xscalar_stepper<is_const, CT>::step_simd()
     {
-        return simd_return_type<T>(p_c->operator()());
+        return R(p_c->operator()());
     }
 
     template <bool is_const, class CT>
-    inline void xscalar_stepper<is_const, CT>::step_leading()
+    inline auto xscalar_stepper<is_const, CT>::step_leading()
+        -> value_type
     {
+        return p_c->operator()();
     }
 
     /**********************************

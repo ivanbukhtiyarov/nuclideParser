@@ -19,53 +19,32 @@ add_subdirectory(lib/googletest)
 
 #Binary build
 
-add_executable(openbps "../src/nuclide_class.h"
-                       "../src/configure.h"
-                       "../src/functionals.h"
-                       "../src/reactions.h"
-                       "../src/executer.h"
-                       "../src/configure.cpp"
-                       "../src/functionals.cpp"
-                       "../src/reactions.cpp"
-                       "../src/executer.cpp"
-                       "../src/parse.cpp"
-                       "../src/form_output.cpp" 
-                       "../src/main.cpp" 
-                       "../extern/pugiData/pugixml.h" 
-                       "../extern/pugiData/pugixml.cpp")
-add_library(openbps_lib STATIC "../src/nuclide_class.h"
-                               "../src/configure.h"
-                               "../src/functionals.h"
-                               "../src/reactions.h"
-                               "../src/executer.h"
-                               "../src/configure.cpp"
-                               "../src/functionals.cpp"
-                               "../src/reactions.cpp"
-                               "../src/executer.cpp"
-                               "../src/parse.cpp"
-                               "../src/form_output.cpp"  
-                               "../src/main.cpp"
-                               "../extern/pugiData/pugixml.h" 
-                               "../extern/pugiData/pugixml.cpp")
+list(APPEND lib_SOURCES
+     "../src/nuclide_class.h"
+      "../src/configure.h"
+      "../src/functionals.h"
+      "../src/reactions.h"
+      "../src/executer.h"
+      "../src/configure.cpp"
+       "../src/functionals.cpp"
+       "../src/reactions.cpp"
+       "../src/executer.cpp"
+       "../src/parse.cpp"
+       "../src/form_output.cpp"
+       "../extern/pugiData/pugixml.h" 
+       "../extern/pugiData/pugixml.cpp")
+
+add_library(openbps_lib STATIC ${lib_SOURCES})
+
+add_executable(openbps "../src/main.cpp" )
+target_link_libraries(openbps PUBLIC openbps_lib)
 
 #Test build
 
-add_executable(o_tst  "../src/nuclide_class.h"
-                      "../src/configure.h"
-                      "../src/functionals.h"
-                      "../src/reactions.h"
-                      "../src/executer.h"
-                      "../src/configure.cpp"
-                      "../src/functionals.cpp"
-                      "../src/reactions.cpp"
-                      "../src/executer.cpp"
-                      "../src/parse.cpp"
-                      "../src/form_output.cpp" 
-                      "../test/test.cpp"
+add_executable(o_tst  "../test/test.cpp"
                       "../test/main_test.cpp"
-                      "../extern/pugiData/pugixml.h" 
-                      "../extern/pugiData/pugixml.cpp" 
-                      "../lib/googletest/googletest/include/gtest/gtest.h")
+                      "../lib/googletest/googletest/include/gtest/gtest.h"
+                      ${lib_SOURCES})
 
 add_test(NAME o_tst COMMAND o_tst)
 target_link_libraries(o_tst PUBLIC openbps_lib gtest)
