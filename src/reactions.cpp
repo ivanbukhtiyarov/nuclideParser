@@ -8,8 +8,8 @@
 #include "../extern/pugiData/pugixml.h"
 //#include "xtensor/xarray.hpp"
 //#include "xtensor/xadapt.hpp"
-#include "../extern/xtensor/xarray.hpp"
-#include "../extern/xtensor/xadapt.hpp"
+#include "../extern/xtensor/include/xtensor/xarray.hpp"
+#include "../extern/xtensor/include/xtensor/xadapt.hpp"
 
 namespace openbps {
 
