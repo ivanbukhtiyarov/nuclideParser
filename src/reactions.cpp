@@ -6,10 +6,8 @@
 #include "configure.h"
 #include "nuclide_class.h"
 #include "../extern/pugiData/pugixml.h"
-#include "xtensor/xarray.hpp"
-#include "xtensor/xadapt.hpp"
-//#include "../extern/xtensor/xarray.hpp"
-//#include "../extern/xtensor/xadapt.hpp"
+#include "../extern/xtensor/xarray.hpp"
+#include "../extern/xtensor/xadapt.hpp"
 
 namespace openbps {
 
@@ -61,7 +59,7 @@ Composition::Composition(pugi::xml_node node) {
 }
 
 
-s_xs_ Composition::parse_xs_xml_(pugi::xml_node node){
+s_xs_ Composition::parse_xs_xml_(pugi::xml_node node) {
 
 	s_xs_ result;
     std::string rxs {node.attribute("typex").value()};
@@ -78,7 +76,52 @@ s_xs_ Composition::parse_xs_xml_(pugi::xml_node node){
     return result;
 }
 
-void read_reactions_xml(){
+void Composition::depcopymap_(std::map<size_t, std::vector<double>>& fmap,
+		        std::map<size_t, std::vector<double>>& smap) {
+
+	std::map<size_t, std::vector<double>>::iterator it;
+	if (!smap.empty()) {
+		   for ( it= smap.begin(); it != smap.end(); ++it ) {
+			   if (fmap.find(it->first) == fmap.end()){
+				   fmap[it->first] = it->second;
+			   }
+
+		   }
+	   }
+
+}
+
+
+
+void Composition::deploy_all(Composition& externcompos) {
+
+   if (externcompos.name == this->name) {
+	   return;
+   } else {
+
+	   this->depcopymap_(this->energies_, externcompos.energies_);
+	   this->depcopymap_(this->spectrum_, externcompos.spectrum_);
+	   this->depcopymap_(this->flux_, externcompos.flux_);
+	   if (!externcompos.namenuclides_.empty() && this->namenuclides_.empty()) {
+		   this->namenuclides_.resize(externcompos.namenuclides_.size());
+		   std::copy(externcompos.namenuclides_.begin(),externcompos.namenuclides_.end(),
+				     this->namenuclides_.begin());
+	   }
+	   if (!externcompos.namenuclides_.empty() && this->namenuclides_.empty()) {
+		   this->conc_.resize(externcompos.conc_.size());
+		   std::copy(externcompos.conc_.begin(),externcompos.conc_.end(),
+					 this->conc_.begin());
+	   }
+	   if (!externcompos.xslib_.empty() && this->xslib_.empty()){
+		   this->xslib_.resize(externcompos.xslib_.size());
+		   std::copy(externcompos.xslib_.begin(),externcompos.xslib_.end(),
+		   			 this->xslib_.begin());
+
+	   }
+   }
+}
+
+void read_reactions_xml() {
 	pugi::xml_document doc;
 	auto result = doc.load_file(configure::reaction_file.c_str());
 	if (!result) {
@@ -90,6 +133,16 @@ void read_reactions_xml(){
 
 	for (pugi::xml_node tool : root_node.children("composit")) {
 		compositions.push_back(Composition(tool));
+		int index = compositions.size() - 1;
+		if (compositions[index].name == "all") {
+			indexall = index;
+		}
+		composmap.insert({compositions[index].name, index});
+	}
+
+	for (std::vector<Composition>::iterator it = compositions.begin();
+	     it != compositions.end() ;++it) {
+        it->deploy_all(compositions[indexall]);
 	}
 
 
