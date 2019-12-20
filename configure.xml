@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <configure>
 
-  <chain>/home/yuri/Documents/nuclideParser/Xmls/chain.xml</chain>
-  <reaction>/home/yuri/Documents/nuclideParser/Xmls/reactions.xml</reaction>
+  <chain>./Xmls/chain.xml</chain>
+  <reaction>./Xmls/reactions.xml</reaction>
   <numbers>30</numbers>
 
 </configure>

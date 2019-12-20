@@ -35,6 +35,7 @@ list(APPEND lib_SOURCES
        "../extern/pugiData/pugixml.cpp")
 
 add_library(openbps_lib STATIC ${lib_SOURCES})
+target_link_libraries(openbps_lib xtensor)
 
 add_executable(openbps "../src/main.cpp" )
 target_link_libraries(openbps PUBLIC openbps_lib)
