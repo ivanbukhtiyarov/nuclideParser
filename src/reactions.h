@@ -33,6 +33,9 @@ public:
     Composition(){};
     Composition(pugi::xml_node node);
     ~Composition() {std::cout << "Composition " + name + " destroyed\n";};
+    void deploy_all(Composition& externcompos);
+    void depcopymap_(std::map<size_t, std::vector<double>>& fmap,
+    		        std::map<size_t, std::vector<double>>& smap);
 
 private:
     //std::vector<s_nuclides_>  nuclides_;
@@ -43,6 +46,7 @@ private:
     std::vector<std::string> namenuclides_;
     std::vector<double> conc_;
     s_xs_ parse_xs_xml_(pugi::xml_node node);
+
 
 };
 
