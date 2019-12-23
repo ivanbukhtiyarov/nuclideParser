@@ -36,13 +36,15 @@ public:
     void deploy_all(Composition& externcompos);
     void depcopymap_(std::map<size_t, std::vector<double>>& fmap,
     		        std::map<size_t, std::vector<double>>& smap);
+    void get_reaction();
+    std::vector<s_xs_>  xslib_;
 
 private:
     //std::vector<s_nuclides_>  nuclides_;
-    std::vector<s_xs_>  xslib_;
+
     std::map<size_t, std::vector<double>> energies_;
-    std::map<size_t, std::vector<double>> spectrum_;
-    std::map<size_t, std::vector<double>> flux_;
+    std::vector<double> spectrum_;
+    std::vector<double> flux_;
     std::vector<std::string> namenuclides_;
     std::vector<double> conc_;
     s_xs_ parse_xs_xml_(pugi::xml_node node);

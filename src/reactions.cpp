@@ -4,10 +4,11 @@
 #include <iostream>
 #include <string.h>
 #include "configure.h"
-#include "nuclide_class.h"
+#include "functionals.h"
 #include "../extern/pugiData/pugixml.h"
 #include "../extern/xtensor/xarray.hpp"
 #include "../extern/xtensor/xadapt.hpp"
+#include "parse.h"
 
 namespace openbps {
 
@@ -142,7 +143,7 @@ void  Composition::get_reaction() {
         	} else {
         		cuflux = &collapsing(this->energies_[this->flux_.size()],
         		        		     this->flux_,
-        							 this->energies_[ng]);
+									 this->flux_);
         	}
 
             for (int i = 0; i != ng; i++) {
