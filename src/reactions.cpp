@@ -135,19 +135,19 @@ void  Composition::get_reaction() {
 	if (ixs->rxs_.empty()){
 		ixs->rxs_.resize(1);
 		ixs->rxs_[0] = 0.0;
-        if (!ixs->xs_.empty()){
+        if (!ixs->xs_.empty()) {
         	int ng = ixs->xs_.size();
-        	std::vector<double>* cuflux;
+        	std::vector<double> cuflux;
         	if ((this->flux_.size() > 0) && (this->flux_.size() == ng)) {
-        		cuflux = &this->flux_;
+        		cuflux = this->flux_;
         	} else {
-        		cuflux = &collapsing(this->energies_[this->flux_.size()],
+        		cuflux = collapsing(this->energies_[this->flux_.size()],
         		        		     this->flux_,
-									 this->flux_);
+									 this->energies_[ng]);
         	}
 
             for (int i = 0; i != ng; i++) {
-            	ixs->rxs_[0] += cuflux[i] * ixs->xs_[i];
+            	ixs->rxs_[0] = ixs->rxs_[0] + cuflux[i] * ixs->xs_[i];
             }
 
         }
@@ -180,6 +180,7 @@ void read_reactions_xml() {
 	for (std::vector<Composition>::iterator it = compositions.begin();
 	     it != compositions.end() ;++it) {
         it->deploy_all(compositions[indexall]);
+        it->get_reaction();
 	}
 
 
