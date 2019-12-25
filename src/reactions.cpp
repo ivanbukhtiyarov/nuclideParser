@@ -52,7 +52,10 @@ Composition::Composition(pugi::xml_node node) {
 	}
 
 	if (check_for_node(node, "xslibs")) {
-		this->xslib_.push_back(parse_xs_xml_(node.child("xslibs")));
+           std::string rxs {node.child("xslibs").attribute("typex").value()};
+           for (pugi::xml_node tool : node.child("xslibs").children("xslib")) {
+		this->xslib_.push_back(parse_xs_xml_(tool, rxs));
+           }
 	}
 
 	std::vector<std::size_t> shape = {this->flux_.size()};
@@ -62,19 +65,14 @@ Composition::Composition(pugi::xml_node node) {
 }
 
 
-s_xs_ Composition::parse_xs_xml_(pugi::xml_node node) {
-
-	s_xs_ result;
-    std::string rxs {node.attribute("typex").value()};
-    for (pugi::xml_node tool : node.children("xslib")) {
-    	result.xstype = rxs;
-    	result.xsname = tool.attribute("name").value();
-    	if (rxs == "cs") {
-            result.xs_ = get_node_array<double>(tool, "xslib");
-    	} else {
-    		result.rxs_ = get_node_array<double>(tool, "xslib");
-    	}
-
+s_xs_ Composition::parse_xs_xml_(pugi::xml_node node, std::string rxs) {
+    s_xs_ result;    
+    result.xstype = rxs;
+    result.xsname = node.attribute("name").value();
+    if (rxs == "cs") {
+        result.xs_ = get_node_array<double>(node, "xslib");
+    } else {
+    	result.rxs_ = get_node_array<double>(node, "xslib");
     }
     return result;
 }
@@ -102,9 +100,9 @@ void Composition::deploy_all(Composition& externcompos) {
 
 	   this->depcopymap_(this->energies_, externcompos.energies_);
 	   if (!externcompos.spectrum_.empty() && this->spectrum_.empty()) {
-	   	   		   this->spectrum_.resize(externcompos.spectrum_.size());
-	   	   		   std::copy(externcompos.spectrum_.begin(),externcompos.spectrum_.end(),
-	   	   				     this->spectrum_.begin());
+	       this->spectrum_.resize(externcompos.spectrum_.size());
+	       std::copy(externcompos.spectrum_.begin(),externcompos.spectrum_.end(),
+	   	   	 this->spectrum_.begin());
 	   }
 	   if (!externcompos.flux_.empty() && this->flux_.empty()) {
 	   		   this->flux_.resize(externcompos.flux_.size());
@@ -143,8 +141,8 @@ void  Composition::get_reaction() {
         		cuflux = this->flux_;
         	} else {
         		cuflux = collapsing(this->energies_[this->flux_.size()],
-        		        		     this->flux_,
-									 this->energies_[ng]);
+        		                    this->flux_,
+					    this->energies_[ng]);
         	}
 
             for (int i = 0; i != ng; i++) {

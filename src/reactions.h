@@ -47,7 +47,7 @@ private:
     std::vector<double> flux_;
     std::vector<std::string> namenuclides_;
     std::vector<double> conc_;
-    s_xs_ parse_xs_xml_(pugi::xml_node node);
+    s_xs_ parse_xs_xml_(pugi::xml_node node, std::string rxs);
 
 
 };
