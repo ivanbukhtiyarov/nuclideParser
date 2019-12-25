@@ -20,7 +20,13 @@ add_subdirectory(lib/googletest)
 #Binary build
 
 list(APPEND lib_SOURCES
+<<<<<<< HEAD
      "../src/nuclide_class.h"
+=======
+      "../src/chain.h"
+      "../src/chain.cpp"
+      "../src/parse.h"
+>>>>>>> 19838a55418c8c25f2c2ac674bc7a3987ef80a3c
       "../src/configure.h"
       "../src/functionals.h"
       "../src/reactions.h"
@@ -49,7 +55,6 @@ add_executable(o_tst  "../test/test.cpp"
 
 add_test(NAME o_tst COMMAND o_tst)
 target_link_libraries(o_tst PUBLIC openbps_lib gtest)
-
 
 
 

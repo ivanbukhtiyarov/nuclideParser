@@ -1,6 +1,8 @@
 #include "executer.h"
+
+#include "chain.h"
+#include "parse.h"
 #include "configure.h"
-#include "nuclide_class.h"
 #include "functionals.h"
 #include "reactions.h"
 

@@ -1,4 +1,5 @@
-#include "nuclide_class.h"
+#include "chain.h"
+#include "parse.h"
 #include "configure.h"
 namespace openbps {
 
