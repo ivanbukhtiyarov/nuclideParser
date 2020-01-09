@@ -9,6 +9,7 @@
 #include "../extern/pugiData/pugixml.h"
 #include <chrono>
 #include "parse.h"
+#include "xtensor/xarray.hpp"
 
 namespace openbps {
     
@@ -79,17 +80,21 @@ namespace openbps {
         std::vector<std::vector<double>> form_idx_decay();
         std::map<std::string, std::vector<std::pair<int, int>>> form_reaction();
         std::map<double, std::vector<std::vector<double>>> form_yield_map();
-
+        std::pair<std::vector<double>, std::vector<double>>
+        get_yield_map_(size_t father, const std::string& daughter);
     private:
         s_decay parse_decay_(pugi::xml_node node);
         s_reaction parse_reaction_(pugi::xml_node node);
         s_yield parse_yield_(pugi::xml_node node);
         s_nfy parse_nfy_(pugi::xml_node node);
         s_nuclide parse_nuclide_(pugi::xml_node node);
+
+
     };
 
 
     pugi::xml_node read_chain_xml(const std::string& filename);
+    xt::xarray<double> form_matrix(Chain& chainer, Composition& compos);
 } // namespace openbps
 
 #endif // CHAIN_H
