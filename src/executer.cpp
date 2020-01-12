@@ -5,6 +5,8 @@
 #include "configure.h"
 #include "functionals.h"
 #include "reactions.h"
+#include "xtensor/xarray.hpp"
+#include "xtensor/xadapt.hpp"
 
 namespace openbps {
 
@@ -18,6 +20,8 @@ void run_solver() {
 
 //	std::vector<double> ytarget {collapsing(xval, yval, xtarget)};
 	std::cout << "We star execution\n";
+
+
 
 }
 
@@ -46,6 +50,17 @@ void init_solver() {
 	        std::cout << map[0.0253][i][0] << "  " << map[0.0253][i][1] << "  "<< map[0.0253][i][2] << "  " <<std::endl;
 	    }
 	    read_reactions_xml();
+		for (auto& compos : compositions) {
+			if (compos.name != "all") {
+			   xt::xarray<double> mainarr;
+			   std::vector<std::size_t> shape = { compos.nuclide_number };
+			   xt::xarray<double> y {xt::adapt(compos.conc, shape)};
+			   mainarr = form_matrix(chain, compos);
+			   for (int k = 0; k < configure::numstep; k++) {
+
+			   }
+			}
+		}
 
 }
 

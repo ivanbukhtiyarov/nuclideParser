@@ -1,4 +1,5 @@
-#include "xtensor/xarray.hpp"
+#include "nuclide_class.h"
+#include "configure.h"
 namespace openbps {
 
     std::vector<std::pair<int, std::string>> Chain::form_idx_name() {
@@ -174,7 +175,7 @@ and so on
    }
 
     xt::xarray<double> form_matrix(Chain& chainer, Composition& compos) {
-    	int NN {chainer.nuclides.size()};
+    	size_t NN {chainer.nuclides.size()};
     	int k {0};
     	xt::xarray<int>::shape_type shape = {NN, NN};
     	xt::xarray<double> result = xt::zeros<double>(shape);
@@ -191,8 +192,6 @@ and so on
             			k = chainer.name_idx[chainer.nuclides[i].decay_arr[j].target];
             			result(k, i) += decay_* chainer.nuclides[i].decay_arr[j].branching_ratio;
             		}
-
-
             	}
 
             }
@@ -202,7 +201,7 @@ and so on
             	   if (obj.xsname == chainer.nuclides[i].name) {
             		   double rr {0.0};
                        for (auto& r: obj.rxs) {
-                       			rr += r;
+                       			rr += r * PWD;
                        }
                        for (int j = 0; j < chainer.nuclides[i].reaction_arr.size(); j++) {
                            if (obj.xstype == chainer.nuclides[i].reaction_arr[j].type) {
@@ -213,14 +212,14 @@ and so on
                         		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  {
                         		        auto n_map = chainer.nuclides[i].nfy.yield_arr[j].product_data;
                         		        for (auto& item : n_map) {
-                        		            if (std::find(fplist.begin(), fplist.end(), item.first) != fplist.end()) {
+                        		            if (std::find(fplist.begin(), fplist.end(), item.first) == fplist.end()) {
                         		            	pair1 = chainer.get_yield_map_(i, item.first);
                         		            	pair2 = compos.get_fluxenergy();
                         		            	k = chainer.name_idx[item.first];
                         		                fplist.push_back(item.first);
                         		                double br {0.0};
                         		                double norm {0.0};
-                        		                weight = transition(weight, weight, weight);
+                        		                weight = transition(pair2.first, pair2.second, pair1.first);
                         		                for (int l = 0; l < weight.size(); l++) {
                                                     br += weight[l] * pair1.second[l];
                                                     norm += weight[l];
@@ -235,9 +234,6 @@ and so on
                        }
                        result(i, i) -= rr;
             	   }
-               }
-               for (int j = 0; j < chainer.nuclides[i].reaction_arr.size(); j++) {
-
                }
 
             }

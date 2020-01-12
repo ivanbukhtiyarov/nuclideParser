@@ -5,8 +5,8 @@
 namespace openbps {
 
 std::vector<double> collapsing(const std::vector<double>& xval,
-		               const std::vector<double>& yval,
-                               const std::vector<double>& xtarget){
+		                       const std::vector<double>& yval,
+							   const std::vector<double>& xtarget){
 	std::cout << "Collapse\n";
 
 	if ((xval.size() < 2) || (xtarget.size() < 2)) {
@@ -37,14 +37,14 @@ std::vector<double> collapsing(const std::vector<double>& xval,
     double normx {0.0};
     double bx {xtarget[0]};
     for (int i = 1; i < xval.size(); i++){
-    	while ((jc < xtarget.size()) && (xtarget[jc] <= xval[i])) {
+    	while ((xtarget[jc] <= xval[i]) && (jc < xtarget.size())){
     		normx += val * (xtarget[jc] - bx);
     		ytarget[jc-1] = normx / (xtarget[jc] - xtarget[jc-1]);
     		bx = xtarget[jc];
     		normx = 0.0;
     		jc += 1;
     	}
-    	if (jc >= xtarget.size()) {
+    	if (jc >= xtarget.size()){
     		return ytarget;
     	} else {
     		normx += val * (xval[i] - bx);
@@ -53,8 +53,8 @@ std::vector<double> collapsing(const std::vector<double>& xval,
     	}
 
     }
-    if (jc < xtarget.size()) {
-        for (int j = jc; j < xtarget.size(); j++) {
+    if (jc < xtarget.size()){
+        for (int j = jc; j < xtarget.size(); j++){
         	normx += val * (xtarget[j] - bx);
             ytarget[j-1] = normx / (xtarget[j] - xtarget[j-1]);
             bx = xtarget[j];
@@ -73,39 +73,6 @@ translating(const std::vector<double>& xval, const std::vector<double>& xtarget)
 	std::pair <int, double> tpair (0, 2.30);
 	ytranslater.push_back(tpair);
 	return ytranslater;
-}
-
-std::vector<double> transition(const std::vector<double>& xval,
-		                       const std::vector<double>& yval,
-							   const std::vector<double>& xtarget) {
- std::vector<double> result;
- result.resize(xtarget.size());
- if ((xtarget[0] > xval[xval.size()-1]) || (xtarget[xtarget.size()-1] < xval[0])) {
-     return result;
- }
- std::vector<double> xhalfv;
- for (int i=0; i<xval.size()-1; i++) {
-      xhalfv.push_back((xval[i]+ xval[i+1])/2);}
- int icurr{0};
- double len {0.};
- double right {0.};
- double left {0.};
- for (int i=0; i < xhalfv.size(); i++) {
-      if (xhalfv[i] < xtarget[0]) {
-          result[0]=result[0] + yval[i]; }
-      else if (xhalfv[i] >= xtarget[xtarget.size()-1]) {
-         result[xtarget.size()-1]=result[xtarget.size()-1] + yval[i];}
-      else {
-          while ((icurr < xtarget.size() - 1) && (xhalfv[i] > xtarget[icurr+1])) {
-              icurr++;}
-          left = (xhalfv[i] - xtarget[icurr])/(xtarget[icurr+1]-xtarget[icurr]);
-          right = (-xhalfv[i] + xtarget[icurr+1])/(xtarget[icurr+1]-xtarget[icurr]);
-          result[icurr]=result[icurr] + yval[i]*left;
-          result[icurr+1]=result[icurr+1] + yval[i]*right;
-      }
-}
-
-return result;
 }
 
 }

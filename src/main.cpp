@@ -1,7 +1,7 @@
+#include "nuclide_class.h"
 #include "configure.h"
 #include "executer.h"
 #include "../extern/pugiData/pugixml.h"
-#include "chain.h"
 
 int main(int arc, char *argv[]) {
     using namespace openbps;

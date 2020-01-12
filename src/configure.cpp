@@ -72,7 +72,11 @@ void read_conigure_xml()
 	  }
 
 	  if (check_for_node(root, "numbers")) {
-	  	  someint = std::stoi(get_node_value(root, "numbers"));
+		  numstep = std::stoi(get_node_value(root, "numbers"));
+	  }
+
+	  if (check_for_node(root, "timestep")) {
+		  timestep = std::stoi(get_node_value(root, "timestep"));
 	  }
 }
 

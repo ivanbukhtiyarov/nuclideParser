@@ -5,6 +5,8 @@
 
 namespace openbps {
 
+constexpr double PWD {8.64E-20};
+
 std::vector<double> collapsing(const std::vector<double>& xval,
 		                       const std::vector<double>& yval,
 							   const std::vector<double>& xtarget);

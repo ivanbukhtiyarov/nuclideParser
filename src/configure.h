@@ -16,6 +16,8 @@ extern std::string path_output;           //!< directory where output files are 
 extern std::string chain_file;            //!< chain-filename.xml
 extern std::string reaction_file;         //!< reaction-filename.xml
 extern int someint;                       //!< some int variable
+extern int numstep;                       //!< number of substep per one time step
+extern double timestep {30.0};            //!< length of time interval for decesion
 extern bool somebool;                     //!< some bool variable
 extern pugi::xml_document docx;           //!< file handle for chain.xml
 
