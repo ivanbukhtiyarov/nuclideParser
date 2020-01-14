@@ -48,7 +48,7 @@ TEST(ConfigureTest, test4) {
   // Get root element
   pugi::xml_node root = doc.document_element();
   int some = std::stoi(get_node_value(root, "numbers"));
-  EXPECT_EQ(some, 30);
+  EXPECT_EQ(some, 1);
   
 }
 
