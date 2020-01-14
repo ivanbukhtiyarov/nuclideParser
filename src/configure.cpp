@@ -16,6 +16,8 @@ std::string chain_file;            //!< chain-filename.xml
 std::string reaction_file;         //!< reaction-filename.xml
 int someint {0};                   //!< some int variable
 bool somebool {false};             //!< some bool variable
+double timestep;
+int numstep;
 pugi::xml_document docx;
 
 }
@@ -76,7 +78,7 @@ void read_conigure_xml()
 	  }
 
 	  if (check_for_node(root, "timestep")) {
-		  timestep = std::stoi(get_node_value(root, "timestep"));
+		  timestep = std::stod(get_node_value(root, "timestep"));
 	  }
 }
 
@@ -90,6 +92,7 @@ void read_input_xml()
 
 
 }
+
 
 
 

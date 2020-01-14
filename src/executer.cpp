@@ -5,8 +5,8 @@
 #include "configure.h"
 #include "functionals.h"
 #include "reactions.h"
-#include "xtensor/xarray.hpp"
-#include "xtensor/xadapt.hpp"
+#include "../extern/xtensor/include/xtensor/xarray.hpp"
+#include "../extern/xtensor/include/xtensor/xadapt.hpp"
 
 namespace openbps {
 
@@ -53,20 +53,28 @@ void init_solver() {
 		for (auto& compos : compositions) {
 			if (compos.name != "all") {
 			   xt::xarray<double> mainarr;
-			   std::vector<std::size_t> shape = { compos.nuclide_number };
-			   xt::xarray<double> y {xt::adapt(compos.conc, shape)};
+			   std::vector<std::size_t> shape = { chain.nuclides.size() };
+			   xt::xarray<double> y = make_concentration(chain, compos.namenuclides, compos.conc);
+			   xt::xarray<double> y_old = xt::zeros<double>(shape);
+			   y_old = y;
+			   double dt {configure::timestep/configure::numstep};
 			   mainarr = form_matrix(chain, compos);
-			   for (int k = 0; k < configure::numstep; k++) {
-
+			   //for (int k = 0; k < configure::numstep; k++) {
+                           //     y = xt::expm1(mainarr * dt) * y;
+			   //}
+			   std::cout << "RESULT OF CALCULATION IS:" << std::endl;
+			   for (int j = 0; j < y.size(); j++) {
+			   		std::cout << chain.nuclides[j].name << " = " << y[j] << std::endl;
 			   }
 			}
+
+
 		}
 
-}
-
-
-}
 
 }
 
 
+}
+
+}

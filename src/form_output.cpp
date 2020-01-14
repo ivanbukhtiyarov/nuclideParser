@@ -1,5 +1,11 @@
-#include "nuclide_class.h"
+#include <cmath>
+#include "chain.h"
+#include "functionals.h"
+#include "parse.h"
 #include "configure.h"
+#include "reactions.h"
+#include "../extern/xtensor/include/xtensor/xarray.hpp"
+#include "../extern/xtensor/include/xtensor/xadapt.hpp"
 namespace openbps {
 
     std::vector<std::pair<int, std::string>> Chain::form_idx_name() {
@@ -241,6 +247,22 @@ and so on
     	return result;
 
     }
+    //
+    xt::xarray<double> make_concentration(Chain& chainer, std::vector<std::string>& nameconc,
+    		                              std::vector<double>& ro) {
+    	size_t NN {chainer.nuclides.size()};
+    	xt::xarray<int>::shape_type shape = {NN};
+    	xt::xarray<double> result = xt::zeros<double>(shape);
+    	for (int i = 0; i < nameconc.size(); i++) {
+    		if (chainer.name_idx.find(nameconc[i]) != chainer.name_idx.end()) {
+    			result[chainer.name_idx[nameconc[i]]] = ro[i];
+    		}
+
+    	}
+    	return result;
+
+    }
+
 
     // Read a chain from xml
     pugi::xml_node read_chain_xml(const std::string& filename) {

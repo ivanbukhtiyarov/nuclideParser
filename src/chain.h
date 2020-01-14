@@ -9,7 +9,8 @@
 #include "../extern/pugiData/pugixml.h"
 #include <chrono>
 #include "parse.h"
-#include "xtensor/xarray.hpp"
+#include "reactions.h"
+#include "../extern/xtensor/include/xtensor/xarray.hpp"
 
 namespace openbps {
     
@@ -95,6 +96,9 @@ namespace openbps {
 
     pugi::xml_node read_chain_xml(const std::string& filename);
     xt::xarray<double> form_matrix(Chain& chainer, Composition& compos);
+    xt::xarray<double> make_concentration(Chain& chainer, std::vector<std::string>& nameconc,
+    		                              std::vector<double>& ro);
 } // namespace openbps
 
 #endif // CHAIN_H
+
