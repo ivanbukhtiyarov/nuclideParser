@@ -13,9 +13,17 @@ include_directories(extern)
 #add_library(pugixml extern/pugiData/pugixml.cpp)
 add_subdirectory(extern/xtl)
 add_subdirectory(extern/xtensor)
+add_subdirectory(extern/xtensor-blas)
 target_link_libraries(xtensor INTERFACE xtl)
+target_link_libraries(xtensor-blas INTERFACE xtensor)
 
 add_subdirectory(lib/googletest)
+
+add_definitions(-DHAVE_CBLAS=1)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
+message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
 #Binary build
 
@@ -37,7 +45,8 @@ list(APPEND lib_SOURCES
        "../extern/pugiData/pugixml.cpp")
 
 add_library(openbps_lib STATIC ${lib_SOURCES})
-target_link_libraries(openbps_lib xtensor)
+target_link_libraries(openbps_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} xtensor xtensor-blas)
+
 
 add_executable(openbps "../src/main.cpp" )
 target_link_libraries(openbps PUBLIC openbps_lib)
