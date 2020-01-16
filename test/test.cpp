@@ -12,6 +12,8 @@
 #include "../extern/xtensor-blas/include/xtensor-blas/xlinalg.hpp"
 #include "../extern/xtensor-blas/include/xtensor-blas/xlapack.hpp"
 
+using namespace std::complex_literals;
+
 // Tests that the Foo::Bar() method does Abc.
 TEST(ChainTest, test1) {
   using namespace openbps;
@@ -93,5 +95,16 @@ TEST(xlapack, test5)
                                     { 1,  4},
                                     {-5,-18}};
         EXPECT_EQ(expected3, res3);
+
+        xarray<std::complex<double>> M = {{ 3.-1.i,2+0.i},
+                                          { 1.-1.i, 0.+0.i}};
+        xarray<std::complex<double>> b = {6+0.i,2+0.i};
+        xarray<std::complex<double>> res4 = {1.+1.i,  1.-1.i};
+        xarray<std::complex<double>> x = linalg::solve(M, b);
+        EXPECT_NEAR(x(0).real(), res4(0).real(), 1.e-6);
+        EXPECT_NEAR(x(0).imag(), res4(0).imag(), 1.e-6);
+        EXPECT_NEAR(x(1).real(), res4(1).real(), 1.e-6);
+        EXPECT_NEAR(x(1).imag(), res4(1).imag(), 1.e-6);
+
     }
 
