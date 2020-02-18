@@ -59,21 +59,30 @@ void init_solver() {
 			   y_old = y;
 			   double dt {configure::timestep/configure::numstep};
 			   mainarr = form_matrix(chain, compos);
-			   //for (int k = 0; k < configure::numstep; k++) {
-                           //     y = xt::expm1(mainarr * dt) * y;
-			   //}
-			   std::cout << "RESULT OF CALCULATION IS:" << std::endl;
+			   std::cout << "MATRIX IS:" << std::endl;
+			   mainarr = xt::exp2(mainarr * dt);
+			   std::cout << "INIT OF CALCULATION IS: " <<  y.size() << std::endl;
+			   for (int j = 0; j < y.size(); j++) {
+			   		std::cout << chain.nuclides[j].name << " = " << y[j] << std::endl;
+
+			   }
+               for (int k = 0; k < configure::numstep; k++) {
+            	   for (int j = 0; j < y.size(); j++) {
+            		   for (int k = 0; k < y.size(); k++) {
+            			    y(j) = y(j) * mainarr(j, k);
+            		   }
+            	   }
+
+			   }
+			   std::cout << "RESULT OF CALCULATION IS: " <<  y.size() << std::endl;
 			   for (int j = 0; j < y.size(); j++) {
 			   		std::cout << chain.nuclides[j].name << " = " << y[j] << std::endl;
 			   }
 			}
 
-
 		}
 
-
 }
-
 
 }
 

@@ -6,6 +6,7 @@
 #include "reactions.h"
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
 #include "../extern/xtensor/include/xtensor/xadapt.hpp"
+
 namespace openbps {
 
     std::vector<std::pair<int, std::string>> Chain::form_idx_name() {
@@ -213,7 +214,7 @@ and so on
                            if (obj.xstype == chainer.nuclides[i].reaction_arr[j].type) {
                         	   if (obj.xstype != "fission") {
                         	       k = chainer.name_idx[chainer.nuclides[i].reaction_arr[j].target];
-                        	       result(k, i) += rr;//*branching ratio
+                        	       result(k, i) += rr * PWD;//*branching ratio
                         	   } else {
                         		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  {
                         		        auto n_map = chainer.nuclides[i].nfy.yield_arr[j].product_data;
@@ -230,7 +231,7 @@ and so on
                                                     br += weight[l] * pair1.second[l];
                                                     norm += weight[l];
                         		                }
-                        		                result(k, i) = br / norm * rr;
+                        		                result(k, i) = br / norm * rr * PWD;
                         		            }
                         		         }
                         		   }
@@ -238,7 +239,7 @@ and so on
                         	   }
                            }
                        }
-                       result(i, i) -= rr;
+                       result(i, i) -= rr * PWD;
             	   }
                }
 
