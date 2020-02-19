@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <configure>
 
-  <chain>./Xmls/chain.xml</chain>
+  <chain>./Xmls/chain_simple.xml</chain>
   <reaction>./Xmls/reactions.xml</reaction>
   <numbers>1</numbers>
   <timestep>720000</timestep>
