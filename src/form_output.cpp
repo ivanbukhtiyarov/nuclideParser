@@ -216,8 +216,8 @@ and so on
                         	       k = chainer.name_idx[chainer.nuclides[i].reaction_arr[j].target];
                         	       result(k, i) += rr * PWD;//*branching ratio
                         	   } else {
-                        		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  {
-                        		        auto n_map = chainer.nuclides[i].nfy.yield_arr[j].product_data;
+                        		   for (int n = 0 ; n < chainer.nuclides[i].nfy.energies.size(); n++)  {
+                        		        auto n_map = chainer.nuclides[i].nfy.yield_arr[n].product_data;
                         		        for (auto& item : n_map) {
                         		            if (std::find(fplist.begin(), fplist.end(), item.first) == fplist.end()) {
                         		            	pair1 = chainer.get_yield_map_(i, item.first);
