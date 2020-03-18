@@ -190,6 +190,7 @@ and so on
     	std::vector<std::string> fplist;
     	std::vector<double> weight;
     	double decay_ {0.0};
+        pair2 = compos.get_fluxenergy();
     	for (int i = 0; i < NN; i++) {
             if (chainer.nuclides[i].half_life > 0) {
             	decay_ = log(2.0) / chainer.nuclides[i].half_life;
@@ -221,19 +222,20 @@ and so on
                         		        for (auto& item : n_map) {
                         		            if (std::find(fplist.begin(), fplist.end(), item.first) == fplist.end()) {
                         		            	pair1 = chainer.get_yield_map_(i, item.first);
-                        		            	pair2 = compos.get_fluxenergy();
                         		            	k = chainer.name_idx[item.first];
                         		                fplist.push_back(item.first);
                         		                double br {0.0};
                         		                double norm {0.0};
-                        		                weight = transition(pair2.first, pair2.second, pair1.first);
+                                                if (weight.empty())
+                        		                    weight = transition(pair2.first, pair2.second, pair1.first);
                         		                for (int l = 0; l < weight.size(); l++) {
                                                     br += weight[l] * pair1.second[l];
                                                     norm += weight[l];
                         		                }
                         		                result(k, i) = br / norm * rr * PWD;
                         		            }
-                        		         }
+                        		        }
+                                    weight.clear();
                         		   }
                         	   fplist.clear();
                         	   }
