@@ -41,6 +41,8 @@ list(APPEND lib_SOURCES
        "../src/executer.cpp"
        "../src/parse.cpp"
        "../src/form_output.cpp"
+       "../src/materials.cpp"
+       "../src/materials.h"
        "../extern/pugiData/pugixml.h" 
        "../extern/pugiData/pugixml.cpp")
 
