@@ -155,7 +155,6 @@ and so on
 
     std::pair<std::vector<double>, std::vector<double>>
 	Chain::get_yield_map_(size_t father, const std::string& daughter) {
-
             std::pair<std::vector<double>, std::vector<double>> out;
             std::vector<std::pair<double, double>> fracenergy_;
             std::vector<double> energies;
@@ -192,7 +191,9 @@ and so on
     	double decay_ {0.0};
         pair2 = compos.get_fluxenergy();
     	for (int i = 0; i < NN; i++) {
-            if (chainer.nuclides[i].half_life > 0) {
+
+            if (chainer.nuclides[i].half_life > 0) { //~0
+
             	decay_ = log(2.0) / chainer.nuclides[i].half_life;
             	result(i, i) = -decay_;
             	for (int j = 0; j < chainer.nuclides[i].decay_arr.size(); j++) {
@@ -203,31 +204,34 @@ and so on
             	}
 
             }
-            if (compos.energy_number > 0) {
-
-               for (auto& obj : compos.xslib) {
-            	   if (obj.xsname == chainer.nuclides[i].name) {
+            if (compos.energy_number > 0) {// 0 --  4-5 secs
+            
+               for (auto& obj : compos.xslib) {//0 - 4,5 secs per iteration 
+            	   if (obj.xsname == chainer.nuclides[i].name) { // average 1 sec max 4 s
+                       
             		   double rr {0.0};
-                       for (auto& r: obj.rxs) {
+                       for (auto& r: obj.rxs) {//exactly ~0
                        			rr += r * PWD;
                        }
-                       for (int j = 0; j < chainer.nuclides[i].reaction_arr.size(); j++) {
-                           if (obj.xstype == chainer.nuclides[i].reaction_arr[j].type) {
+                       for (int j = 0; j < chainer.nuclides[i].reaction_arr.size(); j++) {// 0-3sec
+                           if (obj.xstype == chainer.nuclides[i].reaction_arr[j].type) {//0-3sec avg 1 sec
                         	   if (obj.xstype != "fission") {
                         	       k = chainer.name_idx[chainer.nuclides[i].reaction_arr[j].target];
                         	       result(k, i) += rr * PWD;//*branching ratio
-                        	   } else {
-                        		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  {
+                        	   } else {// ELSE works 0.8-3 s
+                                   
+                        		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  { //each iter 0,3 - 1,8 s
                         		        auto n_map = chainer.nuclides[i].nfy.yield_arr[j].product_data;
-                        		        for (auto& item : n_map) {
+                        		        for (auto& item : n_map) {//0,0007 - 0,006 sec
                         		            if (std::find(fplist.begin(), fplist.end(), item.first) == fplist.end()) {
-                        		            	pair1 = chainer.get_yield_map_(i, item.first);
+
+                        		            	pair1 = chainer.get_yield_map_(i, item.first);// 1-5 ms
                         		            	k = chainer.name_idx[item.first];
                         		                fplist.push_back(item.first);
                         		                double br {0.0};
                         		                double norm {0.0};
                                                 if (weight.empty())
-                        		                    weight = transition(pair2.first, pair2.second, pair1.first);
+                        		                    weight = transition(pair2.first, pair2.second, pair1.first);//~0
                         		                for (int l = 0; l < weight.size(); l++) {
                                                     br += weight[l] * pair1.second[l];
                                                     norm += weight[l];

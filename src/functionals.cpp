@@ -1,6 +1,7 @@
 #include "functionals.h"
 #include <iostream>
 #include <vector>
+#include "chain.h"
 
 namespace openbps {
 
@@ -78,7 +79,7 @@ translating(const std::vector<double>& xval, const std::vector<double>& xtarget)
 std::vector<double> transition(const std::vector<double>& xval,
 		                       const std::vector<double>& yval,
 							   const std::vector<double>& xtarget) {
- std::vector<double> result;
+std::vector<double> result;
  result.resize(xtarget.size());
  if ((xtarget[0] > xval[xval.size()-1]) || (xtarget[xtarget.size()-1] < xval[0])) {
      return result;

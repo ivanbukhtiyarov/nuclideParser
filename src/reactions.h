@@ -34,7 +34,8 @@ public:
     std::vector<double> conc;
     Composition(){};
     Composition(pugi::xml_node node);
-    ~Composition() {std::cout << "Composition " + name + " destroyed\n";};
+    ~Composition() {
+        std::cout << "Composition " + name + " destroyed\n ";};
     void deploy_all(Composition& externcompos);
     void depcopymap_(std::map<size_t, std::vector<double>>& fmap,
     		        std::map<size_t, std::vector<double>>& smap);
