@@ -1,5 +1,7 @@
 #include "parse.h"
 #include "../extern/pugiData/pugixml.h"
+#include <sstream>
+using namespace std;
 extern pugi::xml_document docx;
 namespace openbps {
     
@@ -61,5 +63,40 @@ namespace openbps {
         return tokens;
     }
 
+    #include <sstream>
+    
 
+
+std::string join( std::vector<std::string> initList, const std::string& separator)
+{
+    std::string s;
+    for(const auto& i : initList)
+    {
+        if(s.empty())
+        {
+            s = i;
+        }
+        else
+        {
+            s += separator + i;
+        }
+    }
+    return s;
+}
+std::string joinDouble(std::vector<double> initList, const std::string& separator)
+{
+    std::string s;
+    for(const auto& i : initList)
+    {
+        if(s.empty())
+        {
+            s = to_string(i);
+        }
+        else
+        {
+            s += separator + to_string(i);
+        }
+    }
+    return s;
+}
 }

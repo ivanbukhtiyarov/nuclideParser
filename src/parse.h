@@ -18,6 +18,10 @@ bool
 
 std::vector<double> splitAtof(const std::string &s, char delimiter);
 std::vector<std::string> split(const std::string &s, char delimiter);
+std::string joinDouble(std::vector<double> initList, const std::string& separator);
+std::string join( std::vector<std::string> initList, const std::string& separator);
+template <typename T>
+std::string join(const T& v, const std::string& delim);
 template <typename T>
     std::vector<T> get_node_array(pugi::xml_node node, const char* name,
                                   bool lowercase=false)
