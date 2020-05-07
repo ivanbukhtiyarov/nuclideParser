@@ -18,7 +18,9 @@ class Materials {
         double power;
 };
 
-void form_materials_xml(std::vector<Materials> m_arr);
+void form_materials_xml(std::vector<Materials> m_arr, std::string xml_path);
 std::vector<Materials> read_materials_from_reactions();
+std::vector<Materials> read_materials_from_inp(std::string inp_path);
 std::vector<Materials> parse_xml_materials();
+
 #endif /* SRC_MATERIALS_H_ */
