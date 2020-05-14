@@ -9,7 +9,7 @@ std::string XML_OUT_PATH = "./Xmls/outmaterials.xml";
 int main(int arc, char *argv[]) {
     using namespace openbps;
     Timer t;
-
+//
      int result {parse_command_line(arc, argv)};
      read_input_xml();
      executer::init_solver();
