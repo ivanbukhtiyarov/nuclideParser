@@ -17,8 +17,8 @@ int main(int arc, char * argv[]) {
 
     executer::run_solver();
     //to create new inp_materials
-    std::vector<Materials> v = read_materials_from_reactions();
-    form_materials_xml(v, configure::inp_materials_file);
+    // std::vector<Materials> v = read_materials_from_reactions();
+    // form_materials_xml(v, configure::inp_materials_file);
     //forming from reactions INP
     auto w = read_materials_from_inp(configure::inp_materials_file);
     //form_materials_xml(v, XML_OUT_PATH);

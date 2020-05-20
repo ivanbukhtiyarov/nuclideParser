@@ -161,7 +161,6 @@ bool compfe (std::pair <double, double> a,std::pair <double, double> b) {
 }
 
 std::pair<std::vector<double>, std::vector<double>> Composition::get_fluxenergy() {
-	std::cout << "sfsfsf" << std::endl;
 	std::pair<std::vector<double>, std::vector<double>> result;
 	size_t ng;
 	double fluxnorm {0.0};
