@@ -3,7 +3,7 @@
 #include "executer.h"
 #include "../extern/pugiData/pugixml.h"
 #include "materials.h"
- //std::string XML_OUT_PATH = "./Xmls/outmaterials.xml";
+std::string XML_OUT_PATH = "./Xmls/outmaterials.xml";
 
 int main(int arc, char * argv[]) {
     using namespace openbps;
@@ -21,7 +21,7 @@ int main(int arc, char * argv[]) {
     // form_materials_xml(v, configure::inp_materials_file);
     //forming from reactions INP
     auto w = read_materials_from_inp(configure::inp_materials_file);
-    //form_materials_xml(v, XML_OUT_PATH);
+    form_materials_xml(w, XML_OUT_PATH);
     std::cout << "Hello world!\n";
     return 0;
 }

@@ -91,8 +91,8 @@ std::vector<Materials> read_materials_from_inp(std::string inp_path) {
 		  auto names = get_node_value(tool, "namenuclides");
           m.namenuclides = split(names,' ');
 	    }    
-        if (check_for_node(tool, "namenuclides")) {
-		  auto conc = get_node_value(tool, "namenuclides");
+        if (check_for_node(tool, "conc")) {
+		  auto conc = get_node_value(tool, "conc");
           m.conc = splitAtof(conc ,' ');
 	    }  
         m_arr.push_back(m);
