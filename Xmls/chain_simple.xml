@@ -26,6 +26,18 @@
       </fission_yields>
     </neutron_fission_yields>
   </nuclide>
+  <nuclide name="Pu239" half_life="760854000000.0" decay_modes="2" decay_energy="5243259.4049" reactions="1">
+    <decay type="sf" target="Pu239" branching_ratio="3.1e-12"/>
+    <decay type="alpha" target="U235" branching_ratio="0.999999"/>
+    <reaction type="fission" Q="193410000."/>
+    <neutron_fission_yields>
+      <energies>2.53000e-02</energies>
+      <fission_yields energy="2.53000e-02">
+        <products>Gd157 Gd156 I135 Xe135 Xe136 Cs135</products>
+        <data>6.142710e-5 1.483250e-04 0.0292737 0.002566345 0.0219242 4.9097e-6</data>
+      </fission_yields>
+    </neutron_fission_yields>
+  </nuclide>
   <nuclide name="U235" decay_modes="0" reactions="1">
     <reaction type="fission" Q="193410000."/>
     <neutron_fission_yields>

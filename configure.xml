@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <configure>
 
-  <chain>./Xmls/chain_simple.xml</chain>
-  <reaction>./Xmls/reactions.xml</reaction>
-  <numbers>1</numbers>
-  <timestep>720000</timestep>
-
+  <chain>./Xmls/chain_sfr.xml</chain>
+  <reaction>./Xmls/reaction1s.xml</reaction>
+  <numbers>20</numbers>
+  <timestep>20.0</timestep>
+  <method>chebyshev</method>
+  <output>./Xmls/materialsshort20.xml</output>
+  <epb>1.e-5</epb>
+  <cram_order>48</cram_order>
 </configure>

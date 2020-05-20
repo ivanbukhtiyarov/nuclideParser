@@ -84,19 +84,24 @@ std::string join( std::vector<std::string> initList, const std::string& separato
     return s;
 }
 std::string joinDouble(std::vector<double> initList, const std::string& separator)
-{
-    std::string s;
-    for(const auto& i : initList)
     {
-        if(s.empty())
+        std::string s;
+        std::ostringstream streamObj;
+        for(const auto& i : initList)
         {
-            s = to_string(i);
+            if(s.empty())
+            {
+                streamObj << i;
+                s = streamObj.str();
+                streamObj.str("");
+            }
+            else
+            {
+                streamObj << i;
+                s += separator + streamObj.str();
+                streamObj.str("");
+            }
         }
-        else
-        {
-            s += separator + to_string(i);
-        }
+        return s;
     }
-    return s;
-}
 }

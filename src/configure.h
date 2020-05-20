@@ -2,8 +2,10 @@
 #define SRC_CONFIGURE_H_
 
 #include "../extern/pugiData/pugixml.h"
-
+#include <sstream>
+#include <vector>
 namespace openbps {
+
 
 //==============================================================================
 // Global variable declarations
@@ -11,6 +13,11 @@ namespace openbps {
 
 namespace configure {
 
+enum class Mode
+  {exponent, //simple exponent matrix
+   iteration,//iterative alogrithm
+   chebyshev // Chebyshev rational approximation method
+  };
 extern std::string path_input;            //!< directory where main .xml files resides
 extern std::string path_output;           //!< directory where output files are written
 extern std::string chain_file;            //!< chain-filename.xml
@@ -18,10 +25,14 @@ extern std::string reaction_file;         //!< reaction-filename.xml
 extern int someint;                       //!< some int variable
 extern int numstep;                       //!< number of substep per one time step
 extern double timestep ;                  //!< length of time interval for decesion
+extern double epb;                        //!< accuracy of calculation
 extern bool somebool;                     //!< some bool variable
 extern pugi::xml_document docx;           //!< file handle for chain.xml
-
-
+extern Mode calcmode;                     //!< mode of calculation
+extern int order;                         //!< CRAM order in {8, 24}
+extern bool rewrite;                      //!< whether to rewrite a concentration data by including nuclid from chain
+extern bool outwrite;                     //!< write calculation result in file
+extern std::vector<std::vector<double>> dumpoutput;      //!< ouput dump
 }
 
 //! Parse init line

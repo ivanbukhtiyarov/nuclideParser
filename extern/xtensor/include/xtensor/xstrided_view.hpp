@@ -276,11 +276,17 @@ namespace xt
 
         void assign_temporary_impl(temporary_type&& tmp);
 
+        using base_type::set_offset;
+
         template <class C>
         friend class xstepper;
         friend class xview_semantic<self_type>;
         friend class xaccessible<self_type>;
         friend class xconst_accessible<self_type>;
+        template <class D>
+        friend class xaxis_iterator;
+        template <class D>
+        friend class xaxis_slice_iterator;
     };
 
     /**************************
@@ -635,7 +641,7 @@ namespace xt
      *
      * \code{.cpp}
      * xt::xarray<double> a = {{1, 2, 3}, {4, 5, 6}};
-     * xt::slice_vector sv({xt::range(0, 1)});
+     * xt::xstrided_slice_vector sv({xt::range(0, 1)});
      * sv.push_back(xt::range(0, 3, 2));
      * auto v = xt::strided_view(a, sv);
      * // ==> {{1, 3}}

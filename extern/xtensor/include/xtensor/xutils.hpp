@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <iostream>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -608,11 +609,38 @@ namespace xt
     {
     };
 
+    /******************************
+     * is_iterator implementation *
+     ******************************/
+
+    template <class E, class = void>
+    struct is_iterator : std::false_type
+    {
+    };
+
+    template <class E>
+    struct is_iterator<E, void_t<decltype(
+        *std::declval<const E>(),
+        std::declval<const E>() == std::declval<const E>(),
+        std::declval<const E>() != std::declval<const E>(),
+        ++ (*std::declval<E*>()),
+        (*std::declval<E*>()) ++,
+        std::true_type())>>
+        : std::true_type
+    {
+    };
+
     /********************************************
      * xtrivial_default_construct implemenation *
      ********************************************/
 
-#if !defined(__GNUG__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI)
+#if defined(_GLIBCXX_USE_CXX11_ABI)
+#if _GLIBCXX_USE_CXX11_ABI || (defined(_GLIBCXX_USE_DUAL_ABI) && !_GLIBCXX_USE_DUAL_ABI)
+#define XTENSOR_GLIBCXX_USE_CXX11_ABI 1
+#endif
+#endif
+
+#if !defined(__GNUG__) || defined(_LIBCPP_VERSION) || defined(XTENSOR_GLIBCXX_USE_CXX11_ABI)
 
     template <class T>
     using xtrivially_default_constructible = std::is_trivially_default_constructible<T>;
@@ -623,6 +651,7 @@ namespace xt
     using xtrivially_default_constructible = std::has_trivial_default_constructor<T>;
 
 #endif
+#undef XTENSOR_GLIBCXX_USE_CXX11_ABI
 
     /*************************
      * conditional type cast *
@@ -729,7 +758,8 @@ namespace xt
         template <class U>
         struct rebind
         {
-            using other = tracking_allocator<U, typename A::template rebind<U>::other, P>;
+            using traits = std::allocator_traits<A>;
+            using other = tracking_allocator<U, typename traits::template rebind_alloc<U>, P>;
         };
     };
 
@@ -767,7 +797,8 @@ namespace xt
     template <class X, template <class, class> class C, class T, class A>
     struct rebind_container<X, C<T, A>>
     {
-        using allocator = typename A::template rebind<X>::other;
+        using traits = std::allocator_traits<A>;
+        using allocator = typename traits::template rebind_alloc<X>;
         using type = C<X, allocator>;
     };
 

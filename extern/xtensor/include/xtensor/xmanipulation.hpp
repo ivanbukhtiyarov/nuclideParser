@@ -14,6 +14,7 @@
 #include "xstrided_view.hpp"
 #include "xutils.hpp"
 #include "xtensor_config.hpp"
+#include "xrepeat.hpp"
 
 namespace xt
 {
@@ -86,6 +87,15 @@ namespace xt
 
     template<class E>
     auto roll(E&& e, std::ptrdiff_t shift, std::ptrdiff_t axis);
+
+    template<class E>
+    auto repeat(E&& e, std::size_t repeats, std::size_t axis);
+
+    template<class E>
+    auto repeat(E&& e, const std::vector<std::size_t>& repeats, std::size_t axis);
+
+    template<class E>
+    auto repeat(E&& e, std::vector<std::size_t>&& repeats, std::size_t axis);
 
     /****************************
      * transpose implementation *
@@ -248,8 +258,30 @@ namespace xt
      * ravel and flatten implementation *
      ************************************/
 
-    template <class I, class CI>
-    class xiterator_adaptor;
+    namespace detail
+    {
+        template <class E, layout_type L>
+        struct expression_iterator_getter
+        {
+            using iterator = decltype(std::declval<E>().template begin<L>());
+            using const_iterator = decltype(std::declval<E>().template cbegin<L>());
+
+            inline static iterator begin(E& e)
+            {
+                return e.template begin<L>();
+            }
+
+            inline static const_iterator cbegin(E& e)
+            {
+                return e.template cbegin<L>();
+            }
+
+            inline static auto size(E& e)
+            {
+                return e.size();
+            }
+        };
+    }
 
     /**
      * Returns a flatten view of the given expression. No copy is made.
@@ -262,11 +294,12 @@ namespace xt
     inline auto ravel(E&& e)
     {
         using iterator = decltype(e.template begin<L>());
-        using const_iterator = decltype(e.template cbegin<L>());
-        using adaptor_type = xiterator_adaptor<iterator, const_iterator>;
+        using iterator_getter = detail::expression_iterator_getter<std::remove_reference_t<E>, L>;
+        auto size = e.size();
+        auto adaptor = make_xiterator_adaptor(std::forward<E>(e), iterator_getter());
         constexpr layout_type layout = std::is_pointer<iterator>::value ? L : layout_type::dynamic;
-        using type = xtensor_view<adaptor_type, 1, layout, extension::get_expression_tag_t<E>>;
-        return type(adaptor_type(e.template begin<L>(), e.template cbegin<L>(), e.size()), { e.size() });
+        using type = xtensor_view<decltype(adaptor), 1, layout, extension::get_expression_tag_t<E>>;
+        return type(std::move(adaptor), { size });
     }
 
     /**
@@ -731,7 +764,6 @@ namespace xt
      *
      * @param e the input xexpression
      * @param shift the number of places by which elements are shifted
-     * @param axis the axis along which elements are shifted.
      *
      * @return a roll of the input expression
      */
@@ -846,6 +878,74 @@ namespace xt
 
         detail::roll(cpy.begin(), e.begin(), shift, saxis, shape, 0);
         return cpy;
+    }
+
+    /****************************
+     * repeat implementation    *
+     ****************************/
+    namespace detail
+    {
+        template<class E, class R>
+        inline auto make_xrepeat(E&& e, R&& r, typename std::decay_t<E>::size_type axis)
+        {
+            const auto casted_axis = static_cast<typename std::decay_t<E>::size_type>(axis);
+            if (r.size() != e.shape(casted_axis))
+            {
+                XTENSOR_THROW(std::invalid_argument, "repeats must have the same size as the specified axis");
+            }
+            return xrepeat<const_xclosure_t<E>, R>(std::forward<E>(e), std::forward<R>(r), axis);
+        }
+    }
+
+    /**
+     * @brief Repeats elements of an expression along a given axis.
+     *
+     * @param e the input xexpression
+     * @param repeats The number of repetition of each elements. \ref repeats is broadcasted to
+     * fit the shape of the given \ref axis.
+     * @param axis the axis along which to repeat the value
+     *
+     * @return an expression which as the same shape as \ref e, except along the given \ref axis
+     */
+    template <class E>
+    inline auto repeat(E&& e, std::size_t repeats, std::size_t axis)
+    {
+        const auto casted_axis = static_cast<typename std::decay_t<E>::size_type>(axis);
+        std::vector<std::size_t> broadcasted_repeats(e.shape(casted_axis));
+        std::fill(broadcasted_repeats.begin(), broadcasted_repeats.end(), repeats);
+        return repeat(std::forward<E>(e), std::move(broadcasted_repeats), axis);
+    }
+
+    /**
+     * @brief Repeats elements of an expression along a given axis.
+     *
+     * @param e the input xexpression
+     * @param repeats The number of repetition of each elements. The size of \ref repeats 
+     * must match the shape of the given \ref axis.
+     * @param axis the axis along which to repeat the value
+     *
+     * @return an expression which as the same shape as \ref e, except along the given \ref axis
+     */
+    template <class E>
+    inline auto repeat(E&& e, const std::vector<std::size_t>& repeats, std::size_t axis)
+    {
+        return detail::make_xrepeat(std::forward<E>(e), repeats, axis);
+    }
+
+    /**
+     * @brief Repeats elements of an expression along a given axis.
+     *
+     * @param e the input xexpression
+     * @param repeats The number of repetition of each elements. The size of \ref repeats 
+     * must match the shape of the given \ref axis.
+     * @param axis the axis along which to repeat the value
+     *
+     * @return an expression which as the same shape as \ref e, except along the given \ref axis
+     */
+    template <class E>
+    inline auto repeat(E&& e, std::vector<std::size_t>&& repeats, std::size_t axis)
+    {
+        return detail::make_xrepeat(std::forward<E>(e), std::move(repeats), axis);
     }
 }
 

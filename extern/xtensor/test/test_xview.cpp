@@ -128,6 +128,18 @@ namespace xt
         }
     }
 
+    TEST(xview, negative_index)
+    {
+        view_shape_type shape = {3, 4};
+        xarray<double> a(shape);
+        std::vector<double> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        std::copy(data.cbegin(), data.cend(), a.template begin<layout_type::row_major>());
+
+        auto view0 = view(a, -2, range(1, 4));
+        auto view1 = view(a, 1, range(1, 4));
+        EXPECT_EQ(view0, view1);
+    }
+
     TEST(xview, stored_range)
     {
         view_shape_type shape = { 3, 4 };
@@ -1085,6 +1097,12 @@ namespace xt
         EXPECT_FALSE(b);
         b = detail::is_strided_view<decltype(a), xrange<int>, xrange<int>, int>::value;
         EXPECT_TRUE(b);
+
+        std::vector<size_t> empty;
+        auto v5 = xt::view(a, drop(empty), drop(empty), drop(empty));
+        v5(1, 1, 1) = 456;
+        EXPECT_EQ(v5, a);
+        EXPECT_EQ(a(1, 1, 1), 456);
     }
 
     TEST(xview, drop_negative)
@@ -1100,6 +1118,20 @@ namespace xt
         auto v1 = xt::view(a, drop(-3, -1), keep(0, 1), drop(-3, -2));
         xtensor<double, 3> exp_v1 = { { { 9, 12 },{ 13, 16 } } };
         EXPECT_EQ(v1, exp_v1);
+    }
+
+    TEST(xview, const_keep_drop_slice)
+    {
+        xt::xtensor<double, 1> xs = xt::arange<double>(10);
+        const auto kidx = xt::keep(0, 3, 5);
+        const auto didx = xt::drop(1, 2, 4, 6, 7, 8, 9);
+        auto kv = xt::view(xs, kidx);
+        auto dv = xt::view(xs, didx);
+        xt::xtensor<double, 1> kres = kv;
+        xt::xtensor<double, 1> dres = dv;
+        xt::xtensor<double, 1> expected = { 0., 3., 5. };
+        EXPECT_EQ(kres, expected);
+        EXPECT_EQ(dres, expected);
     }
 
     TEST(xview, mixed_types)

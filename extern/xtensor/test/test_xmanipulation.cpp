@@ -106,7 +106,7 @@ namespace xt
         auto flat3 = ravel(a);
         EXPECT_EQ(flat, flat3);
     }
-    
+
     TEST(xmanipulation, flatten)
     {
         xtensor<double, 3> a = linspace<double>(1., 100., 100).reshape({2, 5, 10});
@@ -122,6 +122,19 @@ namespace xt
         auto v2 = strided_view(a, {range(0, 2), range(0, 3), range(0, 3)});
         xtensor<double, 1> fl2 = flatten<XTENSOR_DEFAULT_TRAVERSAL>(v2);
         EXPECT_EQ(fl2, expected);
+
+        xt::xarray<float> af = xt::arange<float>(100., 127.).reshape({3,3,3});
+        auto view = xt::flatten(xt::view(af, xt::range(1,3), xt::range(1,3), xt::range(1,3)));
+        auto iter = view.begin();
+        EXPECT_EQ(*iter++, 113);
+        EXPECT_EQ(*iter++, 114);
+        EXPECT_EQ(*iter++, 116);
+        EXPECT_EQ(*iter++, 117);
+        EXPECT_EQ(*iter++, 122);
+        EXPECT_EQ(*iter++, 123);
+        EXPECT_EQ(*iter++, 125);
+        EXPECT_EQ(*iter++, 126);
+        EXPECT_EQ(iter, view.end());
     }
 
     TEST(xmanipulation, flatnonzero)
@@ -394,5 +407,92 @@ namespace xt
 
         xarray<double> expected8 = {{{3, 1, 2}}, {{6, 4, 5}}, {{9, 7, 8}}};
         ASSERT_EQ(expected8, xt::roll(e2, -2, /*axis*/2));
+    }
+
+    TEST(xmanipulation, repeat_all_elements_of_axis_0_of_int_array_2_times)
+    {
+        xarray<int> array = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9},
+        };
+        const auto repeated_array = xt::repeat(array, 2, 0);
+        const auto result = xt::view(repeated_array, xt::all());
+
+        xarray<int>::shape_type expected_shape{6, 3};
+        const auto expected = xt::view(xarray<int>{
+            {1, 2, 3},
+            {1, 2, 3},
+            {4, 5, 6},
+            {4, 5, 6},
+            {7, 8, 9},
+            {7, 8, 9},
+        }, xt::all());
+        ASSERT_EQ(expected_shape, repeated_array.shape());
+        ASSERT_EQ(expected, result);
+    }
+
+    TEST(xmanipulation, repeat_all_elements_of_axis_1_of_double_array_2_times)
+    {
+        xarray<double> array = {
+            {1.0, 2.0, 3.0},
+            {4.0, 5.0, 6.0},
+            {7.0, 8.0, 9.0},
+        };
+
+        const auto repeated_array = xt::repeat(array, 2, 1);
+        const auto result = xt::view(repeated_array, xt::all());
+
+        xarray<double>::shape_type expected_shape{3, 6};
+        const auto expected = xt::view(xarray<double>{
+            {1.0, 1.0, 2.0, 2.0, 3.0, 3.0},
+            {4.0, 4.0, 5.0, 5.0, 6.0, 6.0},
+            {7.0, 7.0, 8.0, 8.0, 9.0, 9.0},
+        }, xt::all());
+        ASSERT_EQ(expected_shape, repeated_array.shape());
+        ASSERT_EQ(expected, result);
+    }
+
+    TEST(xmanipulation, repeat_elements_of_axis_0_123)
+    {
+        xarray<size_t> array = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9},
+        };
+
+        const auto repeated_array = xt::repeat(array, {1, 2, 3}, 0);
+        const auto result = xt::view(repeated_array, xt::all());
+
+        xarray<size_t>::shape_type expected_shape{6, 3};
+        const auto expected = xt::view(xarray<size_t>{
+            {1, 2, 3},
+            {4, 5, 6},
+            {4, 5, 6},
+            {7, 8, 9},
+            {7, 8, 9},
+            {7, 8, 9},
+        }, xt::all());
+        ASSERT_EQ(expected_shape, repeated_array.shape());
+        ASSERT_EQ(expected, result);
+    }
+
+    TEST(xmanipulation, repeat_and_access_various_elements)
+    {
+        xarray<size_t> array = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9},
+        };
+
+        const std::vector<std::size_t> repeats{1, 2, 3};
+        const auto repeated_array = xt::repeat(array, repeats, 0);
+
+        ASSERT_EQ(1, repeated_array(0, 0));
+        ASSERT_EQ(4, repeated_array(1, 0));
+        ASSERT_EQ(5, repeated_array(2, 1));
+        ASSERT_EQ(7, repeated_array(3, 0));
+        ASSERT_EQ(8, repeated_array(3, 1));
+        ASSERT_EQ(9, repeated_array(3, 2));
     }
 }

@@ -649,7 +649,7 @@ namespace xt
         explicit svector(const svector<T, N2, A, I2>& rhs);
 
         svector& operator=(const svector& rhs);
-        svector& operator=(svector&& rhs);
+        svector& operator=(svector&& rhs) noexcept(std::is_nothrow_move_assignable<value_type>::value);
         svector& operator=(const std::vector<T>& rhs);
         svector& operator=(std::initializer_list<T> il);
 
@@ -657,7 +657,7 @@ namespace xt
         svector& operator=(const svector<T, N2, A, I2>& rhs);
 
         svector(const svector& other);
-        svector(svector&& other);
+        svector(svector&& other) noexcept(std::is_nothrow_move_constructible<value_type>::value);
 
         void assign(size_type n, const value_type& v);
 
@@ -677,6 +677,7 @@ namespace xt
         const_pointer data() const;
 
         void push_back(const T& elt);
+        void push_back(T&& elt);
         void pop_back();
 
         iterator begin();
@@ -813,7 +814,8 @@ namespace xt
     }
 
     template <class T, std::size_t N, class A, bool Init>
-    inline svector<T, N, A, Init>& svector<T, N, A, Init>::operator=(svector&& rhs)
+    inline svector<T, N, A, Init>& svector<T, N, A, Init>::operator=(svector&& rhs) noexcept(std::is_nothrow_move_assignable<
+                                                                                             value_type>::value)
     {
         assign(rhs.begin(), rhs.end());
         return *this;
@@ -850,7 +852,7 @@ namespace xt
     }
 
     template <class T, std::size_t N, class A, bool Init>
-    inline svector<T, N, A, Init>::svector(svector&& rhs)
+    inline svector<T, N, A, Init>::svector(svector&& rhs) noexcept(std::is_nothrow_move_constructible<value_type>::value)
     {
         this->swap(rhs);
     }
@@ -982,6 +984,16 @@ namespace xt
             grow();
         }
         *(m_end++) = elt;
+    }
+
+    template <class T, std::size_t N, class A, bool Init>
+    void svector<T, N, A, Init>::push_back(T&& elt)
+    {
+        if (m_end >= m_capacity)
+        {
+            grow();
+        }
+        *(m_end++) = std::move(elt);
     }
 
     template <class T, std::size_t N, class A, bool Init>
@@ -1163,11 +1175,11 @@ namespace xt
 
         // Update ref if element moved
         const T* elt_ptr = &elt;
-        if (it <= elt_ptr && elt_ptr < m_end)
-        {
-            ++elt_ptr;
-        }
-        *it = *elt_ptr;
+        bool cond = it <= elt_ptr && elt_ptr < m_end;
+        // More complicated than incrementing elt_ptr, but this avoids
+        // false positive array-bounds warning on GCC 10
+        const T* src_ptr = cond ? it + (elt_ptr - it) + std::ptrdiff_t(1) : elt_ptr;
+        *it = *src_ptr;
         return it;
     }
 
@@ -1328,7 +1340,8 @@ namespace xt
     template <class X, class T, std::size_t N, class A, bool B>
     struct rebind_container<X, svector<T, N, A, B>>
     {
-        using allocator = typename A::template rebind<X>::other;
+        using traits = std::allocator_traits<A>;
+        using allocator = typename traits::template rebind_alloc<X>;
         using type = svector<X, N, allocator, B>;
     };
 

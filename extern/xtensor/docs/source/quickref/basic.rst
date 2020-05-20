@@ -125,7 +125,7 @@ length of the underlying buffer and remaining dimensions:
     std::cout << a0 << std::endl;
     // outputs {{1., 2., 3.}, {4., 5., 6. }}
 
-    xt::xtensor<double, 2> a1 = {{1. 2.}, {3., 4.}, {5., 6.}};
+    xt::xtensor<double, 2> a1 = {{1., 2.}, {3., 4.}, {5., 6.}};
     a1.reshape({-1, 3});
     std::cout << a1 << std::endl;
     // outputs {{1., 2., 3.}, {4., 5., 6. }}
@@ -161,7 +161,7 @@ Element access
 .. code::
 
     xt::xarray<double> a = {{1., 2., 3.}, {4., 5., 6.}};
-    double d0 = a(0, 2);   // d0 is 6
+    double d0 = a(0, 2);   // d0 is 3.
     double d1 = a(2);      // d1 is a(0, 2)
     double d2 = a[{0, 2}]; // d2 is a(0, 2)
 

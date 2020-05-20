@@ -1,15 +1,17 @@
 #include "materials.h"
 #include "configure.h"
 #include "parse.h"
-
-using namespace openbps;
+#include <memory>
+#include <algorithm>
+#include "../extern/pugiData/pugixml.h"
+namespace openbps {
 
 Materials::Materials(){
     name = "default material";
     volume =  rand() % 100; ;
     mass =  rand() % 100; ;
     power = 1.0;
-} 
+}
 
 
 void Materials::xml_add_material(pugi::xml_node node) {
@@ -23,6 +25,22 @@ void Materials::xml_add_material(pugi::xml_node node) {
     nameofn.append_child(pugi::node_pcdata).set_value(join(namenuclides," ").c_str());
     auto concnod = material.append_child("conc");
     concnod.append_child(pugi::node_pcdata).set_value(joinDouble(conc, " ").c_str());
+}
+
+void Materials::add_nuclide(std::string& extname, double extconc) {
+    auto it = std::find(this->namenuclides.begin(), this->namenuclides.end(), extname);
+    if (it == this->namenuclides.end()) {
+	this->namenuclides.push_back(extname);
+	this->conc.push_back(extconc);
+    } else {
+       auto index = std::distance(this->namenuclides.begin(), it);
+       this->conc[index] = extconc;
+    }
+
+}
+
+void Materials::bindcomposition(Composition& extcompos){
+  this->compos = std::make_shared<Composition>(extcompos);
 }
 
 std::vector<Materials> read_materials_from_reactions() {
@@ -60,7 +78,7 @@ void form_materials_xml(std::vector<Materials> m_arr, std::string xml_path) {
         m_arr[i].xml_add_material(materials);
     }
     bool saveSucceeded = doc.save_file(xml_path.c_str(), PUGIXML_TEXT("  "));
-    assert(saveSucceeded);
+    //assert(saveSucceeded);
 }
 
 std::vector<Materials> read_materials_from_inp(std::string inp_path) {
@@ -86,4 +104,17 @@ std::vector<Materials> read_materials_from_inp(std::string inp_path) {
         m_arr.push_back(m);
 	}
     return m_arr;
+}
+
+void matchcompositions(std::vector<Composition>& compositions, std::vector<Materials>& materials) {
+    for (auto&  mat: materials) {
+         for  (auto&  compos:compositions ) {
+             if (mat.name==compos.name) {
+	              mat.bindcomposition(compos);
+                 break;
+             }
+         }
+     }
+}
+
 }

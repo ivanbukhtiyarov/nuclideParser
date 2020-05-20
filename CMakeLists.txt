@@ -3,6 +3,12 @@ project(Openbps)
 
 set(CMAKE_CXX_STANDARD 17)
 
+#===============================================================================
+# Command line options
+#===============================================================================
+
+option(optimize "Turn on O3 flag"        OFF)
+
 #find_package(GTest REQUIRED)
 
 include_directories(src)
@@ -26,6 +32,12 @@ message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
 message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
 #Binary build
+#Check compiler options
+if(optimize)
+  list(APPEND cxxflags -O3)
+endif()
+# Show flags being used
+message(STATUS "C++ flags: ${cxxflags}")
 
 list(APPEND lib_SOURCES
       "../src/chain.h"
@@ -47,10 +59,16 @@ list(APPEND lib_SOURCES
        "../extern/pugiData/pugixml.cpp")
 
 add_library(openbps_lib STATIC ${lib_SOURCES})
+# Set compile flags
+target_compile_options(openbps_lib PRIVATE ${cxxflags})
+# Link library
 target_link_libraries(openbps_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} xtensor xtensor-blas)
 
 
 add_executable(openbps "../src/main.cpp" )
+# Set compile flags
+target_compile_options(openbps PRIVATE ${cxxflags})
+# Link executable
 target_link_libraries(openbps PUBLIC openbps_lib)
 
 #Test build

@@ -66,14 +66,12 @@ namespace xt
 
         private:
 
+            static index_type& get_index();
+
             mutable CT* m_e;
             inner_strides_type m_strides;
-            thread_local static index_type m_index;
             size_type m_size;
         };
-
-        template <class CT, layout_type L>
-        thread_local typename flat_expression_adaptor<CT, L>::index_type flat_expression_adaptor<CT, L>::m_index;
 
         template <class T>
         struct is_flat_expression_adaptor : std::false_type
@@ -200,6 +198,8 @@ namespace xt
 
         template <class It>
         offset_type compute_element_index(It first, It last) const;
+
+        void set_offset(size_type offset);
 
     private:
 
@@ -668,6 +668,12 @@ namespace xt
         return static_cast<offset_type>(m_offset) + xt::element_offset<offset_type>(strides(), first, last);
     }
 
+    template <class D>
+    void xstrided_view_base<D>::set_offset(size_type offset)
+    {
+        m_offset = offset;
+    }
+
     /******************************************
      * flat_expression_adaptor implementation *
      ******************************************/
@@ -678,7 +684,7 @@ namespace xt
         inline flat_expression_adaptor<CT, L>::flat_expression_adaptor(CT* e)
             : m_e(e)
         {
-            resize_container(m_index, m_e->dimension());
+            resize_container(get_index(), m_e->dimension());
             resize_container(m_strides, m_e->dimension());
             m_size = compute_size(m_e->shape());
             compute_strides(m_e->shape(), L, m_strides);
@@ -689,7 +695,7 @@ namespace xt
         inline flat_expression_adaptor<CT, L>::flat_expression_adaptor(CT* e, FST&& strides)
             : m_e(e), m_strides(xtl::forward_sequence<inner_strides_type, FST>(strides))
         {
-            resize_container(m_index, m_e->dimension());
+            resize_container(get_index(), m_e->dimension());
             m_size = m_e->size();
         }
 
@@ -710,16 +716,16 @@ namespace xt
         inline auto flat_expression_adaptor<CT, L>::operator[](size_type idx) -> reference
         {
             auto i = static_cast<typename index_type::value_type>(idx);
-            m_index = detail::unravel_noexcept(i, m_strides, L);
-            return m_e->element(m_index.cbegin(), m_index.cend());
+            get_index() = detail::unravel_noexcept(i, m_strides, L);
+            return m_e->element(get_index().cbegin(), get_index().cend());
         }
 
         template <class CT, layout_type L>
         inline auto flat_expression_adaptor<CT, L>::operator[](size_type idx) const -> const_reference
         {
             auto i = static_cast<typename index_type::value_type>(idx);
-            m_index = detail::unravel_noexcept(i, m_strides, L);
-            return m_e->element(m_index.cbegin(), m_index.cend());
+            get_index() = detail::unravel_noexcept(i, m_strides, L);
+            return m_e->element(get_index().cbegin(), get_index().cend());
         }
 
         template <class CT, layout_type L>
@@ -753,9 +759,16 @@ namespace xt
         }
 
         template <class CT, layout_type L>
-        inline auto flat_expression_adaptor<CT, L>::cend() const ->const_iterator
+        inline auto flat_expression_adaptor<CT, L>::cend() const -> const_iterator
         {
             return m_e->template cend<L>();
+        }
+
+        template <class CT, layout_type L>
+        inline auto flat_expression_adaptor<CT, L>::get_index() -> index_type&
+        {
+            thread_local static index_type index;
+            return index;
         }
     }
 

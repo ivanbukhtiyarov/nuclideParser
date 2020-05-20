@@ -183,7 +183,8 @@ void read_reactions_xml() {
 	pugi::xml_document doc;
 	auto result = doc.load_file(configure::reaction_file.c_str());
 	if (!result) {
-	    std::cerr << "Error: file not found!" << std::endl;
+	    std::cout << "Warning: file reactions.xml not found!" << std::endl;
+            return;
 	}
 	pugi::xml_node root_node = doc.child("compositions");
 

@@ -251,7 +251,7 @@ namespace xt
 
         xt::xtensor<size_t, 1> b = {0, 1, 2, 0, 1, 2, 0, 1, 2};
 
-        xt::xtensor<size_t, 1> c = xt::tile(a, 3);
+        xt::xtensor<size_t, 1> c = xt::tile(a, 3u);
 
         EXPECT_EQ(b, c);
     }
@@ -270,7 +270,7 @@ namespace xt
                                     {2, 3},
                                     {4, 5}};
 
-        xt::xtensor<size_t, 2> c = xt::tile(a, 3);
+        xt::xtensor<size_t, 2> c = xt::tile(a, 3u);
 
         EXPECT_EQ(b, c);
     }
@@ -289,7 +289,45 @@ namespace xt
                                     {2, 3, 2, 3, 2, 3, 2, 3},
                                     {4, 5, 4, 5, 4, 5, 4, 5}};
 
-        xt::xtensor<size_t, 2> c = xt::tile(a, {3, 4});
+        xt::xtensor<size_t, 2> c = xt::tile(a, {3u, 4u});
+
+        EXPECT_EQ(b, c);
+    }
+
+    TEST(xpad, tile_d)
+    {
+        xt::xtensor<size_t, 2> a = xt::arange<size_t>(3 * 2).reshape({3, 2});
+
+        xt::xtensor<size_t, 2> b = {{0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5},
+                                    {0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5},
+                                    {0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5}};
+
+        xt::xtensor<size_t, 2> c = xt::tile(a, std::array<size_t, 2>{{3u, 4u}});
+
+        EXPECT_EQ(b, c);
+    }
+
+    TEST(xpad, tile_e)
+    {
+        xt::xarray<size_t> a = xt::arange<size_t>(3 * 2).reshape({3, 2});
+
+        xt::xtensor<size_t, 2> b = {{0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5},
+                                    {0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5},
+                                    {0, 1, 0, 1, 0, 1, 0, 1},
+                                    {2, 3, 2, 3, 2, 3, 2, 3},
+                                    {4, 5, 4, 5, 4, 5, 4, 5}};
+
+        xt::xtensor<size_t, 2> c = xt::tile(a, std::vector<size_t>{{3u, 4u}});
 
         EXPECT_EQ(b, c);
     }

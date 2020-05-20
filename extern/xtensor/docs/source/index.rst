@@ -63,11 +63,12 @@ for details.
    scalar
    adaptor
    operator
-   histogram
    view
    indices
    builder
    missing
+   histogram
+   random
    file_loading
    build-options
    pitfall
@@ -82,6 +83,7 @@ for details.
    quickref/math
    quickref/reducer
    view
+   quickref/iterator
    quickref/manipulation
 
 .. toctree::
@@ -90,6 +92,7 @@ for details.
 
    api/expression_index
    api/container_index
+   api/iterator_index
    api/function_index
    api/io_index
    api/xmath

@@ -9,6 +9,7 @@
 
 #include "../extern/xtensor-blas/include/xtensor-blas/xblas.hpp"
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
+#include "../extern/xtensor/include/xtensor/xmath.hpp"
 #include "../extern/xtensor-blas/include/xtensor-blas/xlinalg.hpp"
 #include "../extern/xtensor-blas/include/xtensor-blas/xlapack.hpp"
 
@@ -106,5 +107,24 @@ TEST(xlapack, test5)
         EXPECT_NEAR(x(1).real(), res4(1).real(), 1.e-6);
         EXPECT_NEAR(x(1).imag(), res4(1).imag(), 1.e-6);
 
+    }
+
+TEST(xtensor, test6)
+    {
+        using namespace xt;
+        xarray<double> a = {{ 2, 1, 1},
+                            {-1, 1,-1},
+                            { 1, 2, 3}};
+
+        xarray<double> vec = {2, 3, -10};
+        xarray<double> expected = {3, 1, -5};
+        auto rows {xt::row(a, 1)};
+        auto columns {xt::col(a, 2)};
+        auto d1=1.0 - columns;
+        auto d2=xt::exp2(d1);
+        double res1 {-1.0};
+        double res2 {3.0};
+        EXPECT_EQ(d2(0), 1.0);
+        EXPECT_EQ(xt::sum(xt::col(a, 2))(0), res2);
     }
 
