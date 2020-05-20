@@ -75,14 +75,26 @@ std::vector<Materials> read_materials_from_inp(std::string inp_path) {
 
 	for (pugi::xml_node tool : root_node.children("material")) {
         Materials m;
-        m.name = tool.attribute("name").value();
-        m.volume = atof(tool.attribute("volume").value());
-        m.mass = atof(tool.attribute("mass").value());
-        m.power = atof(tool.attribute("power").value());
-        auto names = tool.child_value("namenuclides");
-        m.namenuclides = split(names,' ');
-        auto conc = tool.child_value("conc");
-        m.conc = splitAtof(conc, ' ');
+	    if (check_for_node(tool, "name")) {
+		  m.name = get_node_value(tool, "name");
+	    }       
+	    if (check_for_node(tool, "volume")) {
+		  m.volume = atof(get_node_value(tool, "volume").c_str());
+	    }
+	    if (check_for_node(tool, "mass")) {
+		  m.volume = atof(get_node_value(tool, "mass").c_str());
+	    }
+	    if (check_for_node(tool, "power")) {
+		  m.volume = atof(get_node_value(tool, "power").c_str());
+	    }
+        if (check_for_node(tool, "namenuclides")) {
+		  auto names = get_node_value(tool, "namenuclides");
+          m.namenuclides = split(names,' ');
+	    }    
+        if (check_for_node(tool, "namenuclides")) {
+		  auto conc = get_node_value(tool, "namenuclides");
+          m.conc = splitAtof(conc ,' ');
+	    }  
         m_arr.push_back(m);
 	}
     return m_arr;

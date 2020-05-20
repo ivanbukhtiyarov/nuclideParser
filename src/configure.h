@@ -15,6 +15,7 @@ extern std::string path_input;            //!< directory where main .xml files r
 extern std::string path_output;           //!< directory where output files are written
 extern std::string chain_file;            //!< chain-filename.xml
 extern std::string reaction_file;         //!< reaction-filename.xml
+extern std::string inp_materials_file;    //!< inp_materials_file
 extern int someint;                       //!< some int variable
 extern int numstep;                       //!< number of substep per one time step
 extern double timestep ;                  //!< length of time interval for decesion

@@ -3,24 +3,25 @@
 #include "executer.h"
 #include "../extern/pugiData/pugixml.h"
 #include "materials.h"
-std::string XML_INP_PATH = "./Xmls/inpmaterials.xml";
-std::string XML_OUT_PATH = "./Xmls/outmaterials.xml";
+ //std::string XML_OUT_PATH = "./Xmls/outmaterials.xml";
 
-int main(int arc, char *argv[]) {
+int main(int arc, char * argv[]) {
     using namespace openbps;
     Timer t;
 
-     int result {parse_command_line(arc, argv)};
-     read_input_xml();
-     executer::init_solver();
+    int result {
+        parse_command_line(arc, argv)
+    };
+    read_input_xml();
+    executer::init_solver();
 
-     executer::run_solver();
-    //forming from reactions INP
+    executer::run_solver();
+    //to create new inp_materials
     std::vector<Materials> v = read_materials_from_reactions();
-    form_materials_xml(v, XML_INP_PATH);
-    //reading v from INP and form to OUT
-    v = read_materials_from_inp(XML_INP_PATH);
-    form_materials_xml(v, XML_OUT_PATH);
-    std :: cout << "Hello world!\n";
+    form_materials_xml(v, configure::inp_materials_file);
+    //forming from reactions INP
+    auto w = read_materials_from_inp(configure::inp_materials_file);
+    //form_materials_xml(v, XML_OUT_PATH);
+    std::cout << "Hello world!\n";
     return 0;
 }

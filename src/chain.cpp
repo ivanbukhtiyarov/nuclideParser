@@ -103,6 +103,3 @@ namespace openbps {
     }
 
 } // namespace openbps
-
-
-

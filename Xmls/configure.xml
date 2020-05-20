@@ -3,6 +3,7 @@
 
   <chain>/home/yuri/BPSD/cpp/nuclideParser/Xmls/chain.xml</chain>
   <reaction>/home/yuri/BPSD/cpp/nuclideParser/Xmls/reactions.xml</reaction>
+  <materials>/Users/ivanbukhtiyarov/Desktop/Dyploma/repo18.03/Xmls/inpmaterials.xml</materials>
   <numbers>30</numbers>
 
 </configure>

@@ -14,6 +14,7 @@ std::string path_input;            //!< directory where main .xml files resides
 std::string path_output;           //!< directory where output files are written
 std::string chain_file;            //!< chain-filename.xml
 std::string reaction_file;         //!< reaction-filename.xml
+std::string inp_materials_file;
 int someint {0};                   //!< some int variable
 bool somebool {false};             //!< some bool variable
 double timestep;
@@ -73,6 +74,10 @@ void read_conigure_xml()
 	  	  reaction_file = get_node_value(root, "reaction");
 	  }
 
+	  if (check_for_node(root, "materials")) {
+	  	  inp_materials_file = get_node_value(root, "materials");
+	  }
+	  
 	  if (check_for_node(root, "numbers")) {
 		  numstep = std::stoi(get_node_value(root, "numbers"));
 	  }
