@@ -17,6 +17,12 @@
 #include "../extern/xtensor-blas/include/xtensor-blas/xlinalg.hpp"
 #include "../extern/xtensor-blas/include/xtensor-blas/xlapack.hpp"
 #include "../extern/xtensor-blas/include/xtensor-blas/xblas.hpp"
+#include <Eigen/Sparse>
+#include<Eigen/SparseLU>
+#include <vector>
+
+ 
+typedef Eigen::SparseMatrix<double> SpMat;
 
 using namespace std::complex_literals;
 std::string XML_INP_PATH = "./Xmls/materials.xml";
@@ -234,6 +240,7 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
                                       int order, double alpha0) {
 
     double dt {configure::timestep/configure::numstep};
+    size_t n {y.size()};
     if (configure::outwrite) {
 	configure::dumpoutput.clear();
 	configure::dumpoutput.resize(configure::numstep);
@@ -245,15 +252,48 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
     xt::xarray<std::complex<double>> zy(shape);
     xt::xarray<double> ident = xt::eye(y.size());
     matrix = matrix * dt;
+    Eigen::VectorXd ytemp(n);
+    Eigen::VectorXcd x(n), b(n), zytemp(n);
+    Eigen::SparseMatrix<std::complex<double>> A(n,n);
+    std::complex<double> c(1,0);
+    A.reserve(n * 10);
+    Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>, Eigen::COLAMDOrdering<int> >   solver;
+    // fill A and b; 
+    for (size_t i=0; i < n; i++) {
+         ytemp(i) = y(i);
+         zytemp(i) = c * y(i);
+         for (size_t j=0; j < n; j++) {
+             if (matrix(i, j) != 0.) A.insert(i, j) = c * matrix(i, j);        
+         }
+    }
+    A.makeCompressed(); 
+    
     for (int t=0; t < configure::numstep; t++) {
         
         for (int it=0; it < order; it++) {
             std :: cout << "Number of iterantions is "<<it<< std::endl;
-	    real(zy) = y;
-            y += 2 * real(alpha(it) * xt::linalg::solve(matrix - theta(it) * ident, zy));
+            for (size_t j=0; j < n; j++) {
+                 A.coeffRef(j,j) = c * matrix(j, j) - theta(it);        
+            }
+            // Compute the ordering permutation vector from the structural pattern of A
+            solver.analyzePattern(A); 
+            // Compute the numerical factorization 
+            solver.factorize(A);
+            //Use the factors to solve the linear system 
+            zytemp.real() = ytemp;
+            x = solver.solve(zytemp);
+            
+            x = alpha(it) * x;
+	    ytemp += 2 * x.real(); 
+            std::cout << "Solution is found it in :\n";
+            for (size_t j=0; j < n; j++) 
+                 std::cout << j<<" = "<<ytemp(j)<<std::endl;
+            //y += 2 * real(alpha(it) * xt::linalg::solve(matrix - theta(it) * ident, zy));
         }
 
-        y = y * alpha0;
+        ytemp = ytemp * alpha0;
+        for (size_t i=0; i < n; i++)
+            y(i) = ytemp(i);
         if (configure::outwrite) {
             for (int i = 0; i < y.size(); i++) {
                  configure::dumpoutput[t][i] = y(i);

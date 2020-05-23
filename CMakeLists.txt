@@ -28,6 +28,7 @@ add_subdirectory(lib/googletest)
 add_definitions(-DHAVE_CBLAS=1)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
 message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
@@ -62,7 +63,7 @@ add_library(openbps_lib STATIC ${lib_SOURCES})
 # Set compile flags
 target_compile_options(openbps_lib PRIVATE ${cxxflags})
 # Link library
-target_link_libraries(openbps_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} xtensor xtensor-blas)
+target_link_libraries(openbps_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} Eigen3::Eigen xtensor xtensor-blas)
 
 
 add_executable(openbps "../src/main.cpp" )
