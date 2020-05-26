@@ -1,5 +1,5 @@
 #include "executer.h"
-
+#include <cmath>
 #include "chain.h"
 #include "parse.h"
 #include "configure.h"
@@ -128,14 +128,25 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
             configure::dumpoutput[k].resize(y.size());
         }
     }
-    xt::xarray<double> matrix2;
-    matrix2 = xt::exp2(matrix * dt);
+    xt::xarray<double> matrix2, ro;
+    ro = y * 0.0;
+    matrix2 = xt::exp(matrix * dt);
     for (int k = 0; k < configure::numstep; k++) {
         for (int j = 0; j < y.size(); j++) {
+             std::cout << "1Y J = "<<j<<" "<<y(j)<<std::endl;
+             std::cout << "1RO J = "<<j<<" "<<ro(j)<<std::endl;
              for (int i = 0; i < y.size(); i++) {
-                  y(j) = y(j) * matrix2(j, i);
+                  if (i==j) {
+                      ro(j) += y(i) * matrix2(j, i);
+                  } else {
+                      ro(j) += y(i) *  (matrix2(j, i) - 1);
+                  }
              }
+             if ((std::isnan(ro(j))) || ( std::isinf(ro(j)))) ro(j) = 0.0;
+             std::cout << "2RO J = "<<j<<" "<<ro(j)<<std::endl;
         }
+        y = ro;
+        ro = ro * 0.0;
         if (configure::outwrite) {
             for (int i = 0; i < y.size(); i++) {
         	configure::dumpoutput[k][i] = y(i);
@@ -169,17 +180,19 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
                }
            }
            for (size_t i=0; i < N; i++) {
+               aa = matrix(i, i);
                matrix(i, i) = 0.0;
-	       sigp(i) = xt::sum(xt::col(matrix, i))(0);
+	       sigp(i) = xt::sum(xt::col(matrix, i))(0) + aa;
 
            }
            arr = sigp * dt;
-           disr = xt::exp2(-arr);
+           disr = xt::exp(-arr);
            rest = 1 - disr;
            for (size_t i=0; i < N; i++) {
+               if (rest(i) < 1.e-10) rest(i) = arr(i);
                if (arr(i) > 0.0) er(i) = rest(i)/arr(i);
                for (size_t j=0; j < N; j++) {
-               	    if (sigp(i) > 0) matrix(i,j) = matrix(i,j)/sigp(i);
+               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j)/sigp(j);
 
                }
            }
@@ -202,11 +215,9 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
                          aa = xt::sum(xt::row(arrtemp, ichild))(0);
                          ro(ichild) += aa;
                      }
-                     for (size_t iparent=0; iparent < N; iparent++) {
-                         arr(iparent) = ro(iparent) - y(iparent);
-                         rrr(iparent) = arr(iparent) * et(iparent);
-                         y(iparent) += arr(iparent) * er(iparent);
-                     }
+                     arr = ro - y;
+                     rrr = arr * et;
+                     y += arr * er;
                      ro = y;
 
                      for (int iparent=0; iparent < N; iparent++) {
@@ -284,10 +295,7 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
             x = solver.solve(zytemp);
             
             x = alpha(it) * x;
-	    ytemp += 2 * x.real(); 
-            std::cout << "Solution is found it in :\n";
-            for (size_t j=0; j < n; j++) 
-                 std::cout << j<<" = "<<ytemp(j)<<std::endl;
+	    ytemp += 2 * x.real();
             //y += 2 * real(alpha(it) * xt::linalg::solve(matrix - theta(it) * ident, zy));
         }
 
