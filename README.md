@@ -1,4 +1,4 @@
-# OpenBSD
+# OpenBPS
 ## Description
 Nuclide kinetic solver
 ## Platforms
@@ -74,19 +74,12 @@ In the code the solution of equations (1) – (2) is the iterative method. Detai
 
 where τ is the time step; λ<sup>j→i</sup> is the rate of formation of the i th nuclide from the j th nuclide, taking into account the probability of such a process (with the possibility of branching); and the speed of withdrawal of the nuclide j and i respectively at the expense of all processes.
 
+
 The final solution is:
 (не рендерится из-за размера)
 ####  ``` 7 ```
-$$
-\begin{aligned}
-&y_{k}^{i}(\tau)=y_{k-1}^{i}(\tau)+\\
-&\begin{array}{l}
-+\sum_{j_{k} \neq i} \frac{\lambda^{j_{k} \rightarrow i}}{\lambda_{p}^{j_{k}}} \frac{1-\exp \left(-\lambda_{p}^{i} \tau\right)}{\lambda_{p}^{i} \tau}\left(1-\frac{1-\exp \left(-\lambda_{p}^{i} \tau\right)}{\lambda_{p}^{i} \tau}\right)^{k-1} \prod_{m=1}^{k-1}\left(\sum_{j_{n} \neq i} \frac{\lambda^{j_{m} \rightarrow i}}{\lambda_{p}^{j_{n}}}\right) d y_{0}^{j_{k}} \approx \\
-\approx y_{0}^{i}(\tau)+\sum_{j \neq i}\left\{d y_{0}^{j} \frac{\lambda^{j \rightarrow i}}{\lambda_{p}^{j}} \frac{1-\exp \left(-\lambda_{p}^{i} \tau\right)}{\lambda_{p}^{i} \tau}\left[1+\left(1-\frac{1-\exp \left(-\lambda_{p}^{i} \tau\right)}{\lambda_{p}^{i} \tau}\right) \sum_{j \neq i} \frac{\lambda^{j \rightarrow i}}{\lambda_{p}^{j}}+\right.\right.
-\end{array}\\
-&\left.\left.+\ldots+\left(1-\frac{1-\exp \left(-\lambda_{p}^{i} \tau\right)}{\lambda_{p}^{i} \tau}\right)^{k-1} \prod_{m=1}^{k-1}\left(\sum_{j_{n} \neq i} \frac{\lambda^{j_{n}-i}}{\lambda_{p}^{j_{n}}}\right)\right]\right\}
-\end{aligned}
-$$
+<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Baligned%7D%0A%26y_%7Bk%7D%5E%7Bi%7D(%5Ctau)%3Dy_%7Bk-1%7D%5E%7Bi%7D(%5Ctau)%2B%5C%5C%0A%26%5Cbegin%7Barray%7D%7Bl%7D%0A%2B%5Csum_%7Bj_%7Bk%7D%20%5Cneq%20i%7D%20%5Cfrac%7B%5Clambda%5E%7Bj_%7Bk%7D%20%5Crightarrow%20i%7D%7D%7B%5Clambda_%7Bp%7D%5E%7Bj_%7Bk%7D%7D%7D%20%5Cfrac%7B1-%5Cexp%20%5Cleft(-%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%5Cright)%7D%7B%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%7D%5Cleft(1-%5Cfrac%7B1-%5Cexp%20%5Cleft(-%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%5Cright)%7D%7B%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%7D%5Cright)%5E%7Bk-1%7D%20%5Cprod_%7Bm%3D1%7D%5E%7Bk-1%7D%5Cleft(%5Csum_%7Bj_%7Bn%7D%20%5Cneq%20i%7D%20%5Cfrac%7B%5Clambda%5E%7Bj_%7Bm%7D%20%5Crightarrow%20i%7D%7D%7B%5Clambda_%7Bp%7D%5E%7Bj_%7Bn%7D%7D%7D%5Cright)%20d%20y_%7B0%7D%5E%7Bj_%7Bk%7D%7D%20%5Capprox%20%5C%5C%0A%5Capprox%20y_%7B0%7D%5E%7Bi%7D(%5Ctau)%2B%5Csum_%7Bj%20%5Cneq%20i%7D%5Cleft%5C%7Bd%20y_%7B0%7D%5E%7Bj%7D%20%5Cfrac%7B%5Clambda%5E%7Bj%20%5Crightarrow%20i%7D%7D%7B%5Clambda_%7Bp%7D%5E%7Bj%7D%7D%20%5Cfrac%7B1-%5Cexp%20%5Cleft(-%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%5Cright)%7D%7B%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%7D%5Cleft%5B1%2B%5Cleft(1-%5Cfrac%7B1-%5Cexp%20%5Cleft(-%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%5Cright)%7D%7B%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%7D%5Cright)%20%5Csum_%7Bj%20%5Cneq%20i%7D%20%5Cfrac%7B%5Clambda%5E%7Bj%20%5Crightarrow%20i%7D%7D%7B%5Clambda_%7Bp%7D%5E%7Bj%7D%7D%2B%5Cright.%5Cright.%0A%5Cend%7Barray%7D%5C%5C%0A%26%5Cleft.%5Cleft.%2B%5Cldots%2B%5Cleft(1-%5Cfrac%7B1-%5Cexp%20%5Cleft(-%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%5Cright)%7D%7B%5Clambda_%7Bp%7D%5E%7Bi%7D%20%5Ctau%7D%5Cright)%5E%7Bk-1%7D%20%5Cprod_%7Bm%3D1%7D%5E%7Bk-1%7D%5Cleft(%5Csum_%7Bj_%7Bn%7D%20%5Cneq%20i%7D%20%5Cfrac%7B%5Clambda%5E%7Bj_%7Bn%7D-i%7D%7D%7B%5Clambda_%7Bp%7D%5E%7Bj_%7Bn%7D%7D%7D%5Cright)%5Cright%5D%5Cright%5C%7D%0A%5Cend%7Baligned%7D"/>
+
 Equation (5) describes the concentration of a nuclide, given the possible departure newcomers nuclei of that nuclide at the end of the time step. Equation (6) takes into account the formation of new nuclei of a nuclide of the other, broken at the k-th iteration.
 The algorithm takes into account two main types of channels of nuclear transformations: radioactive decay of nuclei and nuclear reactions initiated by neutrons.
 
@@ -175,3 +168,4 @@ Once the function 𝑟^𝑘,𝑘(𝑥) is known, it can be rearranged to reduce 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\hat{r}_{k,&space;k}(x)=\alpha_{0}&space;\prod_{l=1}^{k&space;/&space;2}\left(1&plus;2&space;\Re\left\{\frac{\tilde{\alpha}_{l}}{x-\theta_{l}}\right\}\right)" target="_blank"><img src="https://latex.codecogs.com/png.latex?\hat{r}_{k,&space;k}(x)=\alpha_{0}&space;\prod_{l=1}^{k&space;/&space;2}\left(1&plus;2&space;\Re\left\{\frac{\tilde{\alpha}_{l}}{x-\theta_{l}}\right\}\right)" title="\hat{r}_{k, k}(x)=\alpha_{0} \prod_{l=1}^{k / 2}\left(1+2 \Re\left\{\frac{\tilde{\alpha}_{l}}{x-\theta_{l}}\right\}\right)" /></a>
 
 CRAM is both efficient and highly accurate over the domain in which it is derived. However, eigenvalues with extremely large imaginary components or positive real components will reduce the accuracy. As such, CRAM is not recommended for use in highly oscillatory problems or those with possible exponential growth such as reactor dynamics.
+## References
