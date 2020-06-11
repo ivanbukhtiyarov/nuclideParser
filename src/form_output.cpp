@@ -6,7 +6,7 @@
 #include "reactions.h"
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
 #include "../extern/xtensor/include/xtensor/xadapt.hpp"
-
+//
 namespace openbps {
 
   std::vector<std::pair<int, std::string>> Chain::form_idx_name() {

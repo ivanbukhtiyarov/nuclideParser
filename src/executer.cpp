@@ -26,7 +26,6 @@ typedef Eigen::SparseMatrix<double> SpMat;
 
 using namespace std::complex_literals;
 std::string XML_INP_PATH = "./Xmls/materials.xml";
-//std::string XML_INP_PATH = "out.xml";
 
 namespace openbps {
 
