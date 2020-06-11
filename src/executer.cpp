@@ -132,7 +132,7 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
     matrix2 = xt::exp(matrix * dt);
     for (int k = 0; k < configure::numstep; k++) {
         for (int j = 0; j < y.size(); j++) {
-            
+
              for (int i = 0; i < y.size(); i++) {
                   if (i==j) {
                       ro(j) += y(i) * matrix2(j, i);
@@ -141,7 +141,7 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
                   }
              }
              if ((std::isnan(ro(j))) || ( std::isinf(ro(j)))) ro(j) = 0.0;
-            
+
         }
         y = ro;
         ro = ro * 0.0;
@@ -357,11 +357,16 @@ void init_solver() {
                                          double actval {0.0};
 	             		         double qval {0.0};
 	             		         for (size_t j = 0; j < y.size(); j++) {
-	             		              if ((chain.nuclides[j].half_life > 0) && (configure::dumpoutput[t][j]>0)) {
+                                             //std :: cout << "FIND RES "<<chain.nuclides[j].name.rfind("U")<<std::endl;
+	             		              if ((chain.nuclides[j].half_life > 0) && (configure::dumpoutput[t][j]>0) && (chain.nuclides[j].name.rfind("U") != 0) &&
+                                                  (chain.nuclides[j].name.rfind("Th") != 0) &&
+                                                  (chain.nuclides[j].name.rfind("Pu") != 0)&&
+                                                  (chain.nuclides[j].name.rfind("Am") != 0)) {
 	             		        	  actval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 1.e+24;
 	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 
                                                                                                    chain.nuclides[j].decay_energy * 1.e+24 *
                                                                                                    1.e-6;
+                                                  //qval += configure::dumpoutput[t][j];
 	             		              }
 	             		          }
 	             		          myfile << t << ";" << actval<<";" << qval << "\n";

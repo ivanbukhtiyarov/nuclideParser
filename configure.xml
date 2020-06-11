@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <configure>
 
-  <chain>./Xmls/chain_l1.xml</chain>
-  <reaction>./Xmls/reactions.xml</reaction>
+  <chain>./Xmls/chain_l1_p9.xml</chain>
+  <reaction>./Xmls/reactions (2).xml</reaction>
   <numbers>10</numbers>
   <timestep>1.0</timestep>
   <method>chebyshev</method>
-  <output>./Xmls/materialss.xml</output>
+  <materials>./Xmls/materials_test.xml</materials>
+  <output>./Xmls/materialspf.xml</output>
   <epb>1.e-5</epb>
   <cram_order>16</cram_order>
 </configure>

@@ -214,6 +214,7 @@ and so on
                      double rr {0.0};
                      for (auto& r: obj.rxs) {//exactly ~0
                      			rr += r;
+
                      }
                      for (int j = 0; j < chainer.nuclides[i].reaction_arr.size(); j++) {// 0-3sec
                          if (obj.xstype == chainer.nuclides[i].reaction_arr[j].type) {//0-3sec avg 1 sec
