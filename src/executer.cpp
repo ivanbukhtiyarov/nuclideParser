@@ -132,8 +132,7 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
     matrix2 = xt::exp(matrix * dt);
     for (int k = 0; k < configure::numstep; k++) {
         for (int j = 0; j < y.size(); j++) {
-             std::cout << "1Y J = "<<j<<" "<<y(j)<<std::endl;
-             std::cout << "1RO J = "<<j<<" "<<ro(j)<<std::endl;
+            
              for (int i = 0; i < y.size(); i++) {
                   if (i==j) {
                       ro(j) += y(i) * matrix2(j, i);
@@ -142,7 +141,7 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
                   }
              }
              if ((std::isnan(ro(j))) || ( std::isinf(ro(j)))) ro(j) = 0.0;
-             std::cout << "2RO J = "<<j<<" "<<ro(j)<<std::endl;
+            
         }
         y = ro;
         ro = ro * 0.0;
