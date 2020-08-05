@@ -316,7 +316,7 @@ void init_solver() {
 	Chain chain(chain_node);
 	    read_reactions_xml();
             //forming from reactions INP
-            std::vector<Materials> v = read_materials_from_inp(XML_INP_PATH);
+            std::vector<Materials> v = read_materials_from_inp(configure::inmaterials_file);
             matchcompositions(compositions, v);
 	    for (auto& mat : v) {
 	         if (mat.name != "all") {
@@ -358,10 +358,7 @@ void init_solver() {
 	             		         double qval {0.0};
 	             		         for (size_t j = 0; j < y.size(); j++) {
                                              //std :: cout << "FIND RES "<<chain.nuclides[j].name.rfind("U")<<std::endl;
-	             		              if ((chain.nuclides[j].half_life > 0) && (configure::dumpoutput[t][j]>0) && (chain.nuclides[j].name.rfind("U") != 0) &&
-                                                  (chain.nuclides[j].name.rfind("Th") != 0) &&
-                                                  (chain.nuclides[j].name.rfind("Pu") != 0)&&
-                                                  (chain.nuclides[j].name.rfind("Am") != 0)) {
+	             		              if ((chain.nuclides[j].half_life > 0)) {
 	             		        	  actval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 1.e+24;
 	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 
                                                                                                    chain.nuclides[j].decay_energy * 1.e+24 *
@@ -378,7 +375,7 @@ void init_solver() {
 	    }
 
 	    if (configure::rewrite) {
-		form_materials_xml(v, configure::path_output);
+		form_materials_xml(v, configure::outmaterials_file);
 	    }
 
 

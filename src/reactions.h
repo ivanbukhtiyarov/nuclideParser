@@ -23,9 +23,12 @@ struct s_xs_ {
     std::string xstype;
     std::vector<double> rxs;
     std::vector<double> xs_;
+    std::vector<double> d_xs_;
+    std::vector<double> d_rxs;
 };
 
 class Composition {
+
 public:
     size_t nuclide_number;
     size_t energy_number;
@@ -48,9 +51,11 @@ private:
 
     std::map<size_t, std::vector<double>> energies_;
     std::vector<double> spectrum_;
+    std::vector<double> d_spectrum_;
     std::vector<double> flux_;
+    std::vector<double> d_flux_;
 
-    s_xs_ parse_xs_xml_(pugi::xml_node node, std::string rxs);
+    s_xs_ parse_xs_xml_(pugi::xml_node node, std::string& rxs, int mode);
 
 
 };

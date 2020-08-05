@@ -16,6 +16,7 @@ class Materials {
         std::string name;
         std::vector<std::string> namenuclides;
         std::vector<double> conc;
+        std::vector<double> d_conc;
         double volume;
         double mass;
         double power;

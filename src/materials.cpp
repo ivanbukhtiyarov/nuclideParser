@@ -25,6 +25,8 @@ void Materials::xml_add_material(pugi::xml_node node) {
     nameofn.append_child(pugi::node_pcdata).set_value(join(namenuclides," ").c_str());
     auto concnod = material.append_child("conc");
     concnod.append_child(pugi::node_pcdata).set_value(joinDouble(conc, " ").c_str());
+    auto dconcnod = material.append_child("dconc");
+    dconcnod.append_child(pugi::node_pcdata).set_value(joinDouble(d_conc, " ").c_str());
 }
 
 void Materials::add_nuclide(std::string& extname, double extconc) {
@@ -101,6 +103,10 @@ std::vector<Materials> read_materials_from_inp(std::string inp_path) {
         m.namenuclides = split(names,' ');
         auto conc = tool.child_value("conc");
         m.conc = splitAtof(conc, ' ');
+        if (check_for_node(tool, "dconc")) {
+            auto dconc = tool.child_value("dconc");
+            m.d_conc = splitAtof(dconc, ' ');
+        }
         m_arr.push_back(m);
 	}
     return m_arr;

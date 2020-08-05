@@ -11,24 +11,28 @@ namespace openbps {
 
 namespace configure {
 
-std::string path_input;            //!< directory where main .xml files resides
+std::string path_input;           //!< directory where main .xml files resides
 std::string path_output {"out.xml"};//!< directory where output files are written
-std::string chain_file;            //!< chain-filename.xml
-std::string reaction_file;         //!< reaction-filename.xml
-int someint {0};                   //!< some int variable
-bool somebool {false};             //!< some bool variable
-double timestep;                   //!< time of simulation
-int numstep;                       //!< number of time step
-double epb {1.e-03};               //!< accuracy of calculation
-pugi::xml_document docx;           //!< xml document
-Mode calcmode {Mode::iteration};    //!< type of solver time depended exponental equation:
-//!< 1- direct matrix exponent by default
-//!< 2- iteration method by E.F. Seleznev and I.V Chernova 2018
-//!< 3- Chebyshev rational approximation by Josey
-int order {8};                     //!< CRAM order in {8, 24} by default CRAM16
+std::string chain_file;           //!< chain-filename.xml
+std::string reaction_file;        //!< reaction-filename.xml
+std::string inmaterials_file;     //!< input materials-filename.xml
+std::string outmaterials_file;    //!< output materials-filename.xml
+int someint {0};                  //!< some int variable
+bool somebool {false};            //!< some bool variable
+double timestep;                  //!< time of simulation
+int numstep;                      //!< number of time step
+double epb {1.e-03};              //!< accuracy of calculation
+pugi::xml_document docx;          //!< xml document
+Mode calcmode {Mode::iteration};  //!< type of solver time depended exponental equation:
+                                  //!< 1- direct matrix exponent by default
+                                  //!< 2- iteration method by E.F. Seleznev and I.V Chernova 2018
+                                  //!< 3- Chebyshev rational approximation by Josey
+int order {8};                    //!< CRAM order in {8, 24} by default CRAM16
 bool rewrite {true};              //!< whether to rewrite a concentration data by including nuclid from chain
 bool outwrite{true};              //!< write calculation result in file
 std::vector<std::vector<double>> dumpoutput;     //!< ouput dump
+bool uncertantie_mod;             //!< calculation mode with uncertanties taking account
+bool decay_extra_out;             //!< print out more information about energy decay
 }
 
 //! Parse init line
@@ -79,6 +83,14 @@ void read_conigure_xml()
 
 	  if (check_for_node(root, "reaction")) {
 	      reaction_file = get_node_value(root, "reaction");
+	  }
+
+	  if (check_for_node(root, "inpmaterials")) {
+	      inmaterials_file = get_node_value(root, "inpmaterials");
+	  }
+
+	  if (check_for_node(root, "outmaterials")) {
+	      outmaterials_file = get_node_value(root, "outmaterials");
 	  }
 
 	  if (check_for_node(root, "output")) {

@@ -22,6 +22,8 @@ extern std::string path_input;            //!< directory where main .xml files r
 extern std::string path_output;           //!< directory where output files are written
 extern std::string chain_file;            //!< chain-filename.xml
 extern std::string reaction_file;         //!< reaction-filename.xml
+extern std::string inmaterials_file;      //!< input materials-filename.xml
+extern std::string outmaterials_file;     //!< output materials-filename.xml
 extern int someint;                       //!< some int variable
 extern int numstep;                       //!< number of substep per one time step
 extern double timestep ;                  //!< length of time interval for decesion
@@ -32,7 +34,10 @@ extern Mode calcmode;                     //!< mode of calculation
 extern int order;                         //!< CRAM order in {8, 24}
 extern bool rewrite;                      //!< whether to rewrite a concentration data by including nuclid from chain
 extern bool outwrite;                     //!< write calculation result in file
-extern std::vector<std::vector<double>> dumpoutput;      //!< ouput dump
+extern std::vector<std::vector<double>> 
+       dumpoutput;                        //!< ouput dump
+extern bool uncertantie_mod;              //!< calculation mode with uncertanties taking account
+extern bool decay_extra_out;              //!< print out more information about energy decay
 }
 
 //! Parse init line

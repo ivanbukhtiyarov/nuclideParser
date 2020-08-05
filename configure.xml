@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <configure>
 
-  <chain>./Xmls/chain_l1_p9.xml</chain>
-  <reaction>./Xmls/reactions (2).xml</reaction>
+  <chain>./Xmls/dchain_u235_l1.xml</chain>
+  <reaction>./Xmls/reactions.xml</reaction>
   <numbers>10</numbers>
   <timestep>1.0</timestep>
   <method>chebyshev</method>
-  <materials>./Xmls/materials_test.xml</materials>
-  <output>./Xmls/materialspf.xml</output>
+  <inpmaterials>./Xmls/materialsu5.xml</inpmaterials>
+  <outmaterials>./Xmls/materials_res.xml</outmaterials>
   <epb>1.e-5</epb>
   <cram_order>16</cram_order>
 </configure>

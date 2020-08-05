@@ -33,10 +33,22 @@ Composition::Composition(pugi::xml_node node) {
 	        this->flux_= get_node_array<double>(tool, "flux");
 		}
 	}
+        if (check_for_node(node, "dflux")) {
+	    for (pugi::xml_node tool : node.children("dflux")) {
+	        this->d_flux_= get_node_array<double>(tool, "dflux");
+		}
+	}
+
 	if (check_for_node(node, "spectrum")) {
 	    for (pugi::xml_node tool : node.children("spectrum")) {
 	        size_t cng = std::stoi(tool.attribute("ng").value());
 	        this->spectrum_= get_node_array<double>(tool, "spectrum");
+		}
+	}
+
+        if (check_for_node(node, "dspectrum")) {
+	    for (pugi::xml_node tool : node.children("dspectrum")) {
+	        this->d_spectrum_= get_node_array<double>(tool, "dspectrum");
 		}
 	}
 
@@ -51,14 +63,13 @@ Composition::Composition(pugi::xml_node node) {
 	if (check_for_node(node, "xslibs")) {
            std::string rxs {node.child("xslibs").attribute("typex").value()};
            for (pugi::xml_node tool : node.child("xslibs").children("xslib")) {
-		this->xslib.push_back(parse_xs_xml_(tool, rxs));
+		this->xslib.push_back(parse_xs_xml_(tool, rxs, 0));
+           }
+           for (pugi::xml_node tool : node.child("xslibs").children("dxslib")) {
+		this->xslib.push_back(parse_xs_xml_(tool, rxs, 1));
            }
 	}
-
-	std::vector<std::size_t> shape = {this->flux_.size()};
-	//xt::xarray<double> arr {xt::adapt(this->flux_, shape)};
-	xt::xarray<double> arr {0.0, 1.00};
-	std::cout << "Xtensor test "<<arr[1] << std::endl;
+        
 	this->nuclide_number = this->conc.size();
 	this->spectrum_.size() > 0 ?
 	    this->energy_number = this->spectrum_.size() :
@@ -66,14 +77,18 @@ Composition::Composition(pugi::xml_node node) {
 }
 
 
-s_xs_ Composition::parse_xs_xml_(pugi::xml_node node, std::string rxs) {
+s_xs_ Composition::parse_xs_xml_(pugi::xml_node node, std::string& rxs, int mode) {
     s_xs_ result;    
     result.xstype = node.attribute("reaction").value();
     result.xsname = node.attribute("name").value();
     if (rxs == "cs") {
-        result.xs_ = get_node_array<double>(node, "xslib");
+        mode == 0 ? 
+                   result.xs_ = get_node_array<double>(node, "xslib") : 
+                   result.d_xs_ = get_node_array<double>(node, "dxslib");
     } else {
-    	result.rxs = get_node_array<double>(node, "xslib");
+        mode == 0 ? 
+    	           result.rxs = get_node_array<double>(node, "xslib"):
+                   result.d_rxs = get_node_array<double>(node, "dxslib");
     }
     return result;
 }
@@ -110,6 +125,16 @@ void Composition::deploy_all(Composition& externcompos) {
 	   		   std::copy(externcompos.flux_.begin(),externcompos.flux_.end(),
 	   				     this->flux_.begin());
 	   }
+           if (!externcompos.d_spectrum_.empty() && this->d_spectrum_.empty()) {
+	       this->d_spectrum_.resize(externcompos.d_spectrum_.size());
+	       std::copy(externcompos.d_spectrum_.begin(),externcompos.d_spectrum_.end(),
+	   	   	 this->d_spectrum_.begin());
+	   }
+	   if (!externcompos.d_flux_.empty() && this->d_flux_.empty()) {
+	   		   this->d_flux_.resize(externcompos.d_flux_.size());
+	   		   std::copy(externcompos.d_flux_.begin(),externcompos.d_flux_.end(),
+	   				     this->d_flux_.begin());
+	   }
 	   if (!externcompos.namenuclides.empty() && this->namenuclides.empty()) {
 		   this->namenuclides.resize(externcompos.namenuclides.size());
 		   std::copy(externcompos.namenuclides.begin(),externcompos.namenuclides.end(),
@@ -143,11 +168,38 @@ void  Composition::get_reaction() {
         	} else {
         		cuflux = collapsing(this->energies_[this->flux_.size()],
         		                    this->flux_,
-					                this->energies_[ng]);
+					    this->energies_[ng]);
         	}
 
             for (int i = 0; i != ng; i++) {
-            	ixs->rxs[0] = ixs->rxs[0] + cuflux[i] * ixs->xs_[i];
+            	ixs->rxs[0] += cuflux[i] * ixs->xs_[i];
+            }
+
+        }
+	}
+        if (ixs->d_rxs.empty()){
+		ixs->d_rxs.resize(1);
+		ixs->d_rxs[0] = 0.0;
+        if (!ixs->d_xs_.empty()) {
+        	int ng = ixs->xs_.size();
+        	std::vector<double> cuflux;
+                std::vector<double> d_cuflux;
+        	if ((this->flux_.size() > 0) && (this->flux_.size() == ng)) {
+        		cuflux = this->flux_;
+        	} else {
+        		cuflux = collapsing(this->energies_[this->flux_.size()],
+        		                    this->flux_,
+					    this->energies_[ng]);
+        	}
+                if ((this->d_flux_.size() > 0) && (this->d_flux_.size() == ng)) {
+        		d_cuflux = this->d_flux_;
+        	} else {
+        		d_cuflux = collapsing(this->energies_[this->d_flux_.size()],
+        		                    this->d_flux_,
+					    this->energies_[ng]);
+        	}
+            for (int i = 0; i != ng; i++) {
+            	ixs->d_rxs[0] += cuflux[i] * ixs->d_xs_[i] + d_cuflux[i] * ixs->xs_[i];
             }
 
         }
