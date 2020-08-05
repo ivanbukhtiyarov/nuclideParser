@@ -19,18 +19,18 @@ include_directories(extern)
 #add_library(pugixml extern/pugiData/pugixml.cpp)
 add_subdirectory(extern/xtl)
 add_subdirectory(extern/xtensor)
-add_subdirectory(extern/xtensor-blas)
+#add_subdirectory(extern/xtensor-blas)
 target_link_libraries(xtensor INTERFACE xtl)
-target_link_libraries(xtensor-blas INTERFACE xtensor)
+#target_link_libraries(xtensor-blas INTERFACE xtensor)
 
 add_subdirectory(lib/googletest)
 
 add_definitions(-DHAVE_CBLAS=1)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+#find_package(BLAS REQUIRED)
+#find_package(LAPACK REQUIRED)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
-message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
+#message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
+m#essage(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
 #Binary build
 #Check compiler options
@@ -63,7 +63,7 @@ add_library(openbps_lib STATIC ${lib_SOURCES})
 # Set compile flags
 target_compile_options(openbps_lib PRIVATE ${cxxflags})
 # Link library
-target_link_libraries(openbps_lib ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} Eigen3::Eigen xtensor xtensor-blas)
+target_link_libraries(openbps_lib Eigen3::Eigen xtensor)
 
 
 add_executable(openbps "../src/main.cpp" )

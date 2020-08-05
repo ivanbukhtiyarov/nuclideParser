@@ -14,9 +14,6 @@
 #include "../extern/xtensor/include/xtensor/xview.hpp"
 #include "../extern/xtensor/include/xtensor/xbuilder.hpp"
 #include "../extern/xtensor/include/xtensor/xcomplex.hpp"
-#include "../extern/xtensor-blas/include/xtensor-blas/xlinalg.hpp"
-#include "../extern/xtensor-blas/include/xtensor-blas/xlapack.hpp"
-#include "../extern/xtensor-blas/include/xtensor-blas/xblas.hpp"
 #include <Eigen/Sparse>
 #include<Eigen/SparseLU>
 #include <vector>
@@ -154,7 +151,7 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
     }
 }
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y) {
            double dt {configure::timestep/configure::numstep};
 	   std::vector<std::size_t> shape = { y.size() };
 	   std::vector<std::size_t> dshape = { y.size(), y.size() };
@@ -206,7 +203,7 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
 	            t++;
                     for (size_t iparent=0; iparent < N; iparent++) {
 	                     for (size_t ichild=0; ichild < N; ichild++) {
-	                         arrtemp(ichild, iparent) = matrix(ichild, iparent)*rrr(iparent);
+	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
                         }
                      }
                      for (size_t ichild=0; ichild < N; ichild++) {
