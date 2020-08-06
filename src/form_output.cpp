@@ -281,8 +281,9 @@ and so on
           	   if (obj.xsname == chainer.nuclides[i].name) { // average 1 sec max 4 s
                      double rr {0.0};
                      for (auto& r: obj.rxs) {rr += r;}
+                     result(i) += rr * PWD;
                    }
-                   result(i) += rr * PWD;
+                   
              }
           }
         }

@@ -330,7 +330,7 @@ void init_solver() {
 		         break;
                        case configure::Mode::iteration:
                          {
-                          xt::xarray<double> sigp {form_sigp(chain, mat);} ;
+                          xt::xarray<double> sigp {form_sigp(chain, mat)} ;
                 	  iterative(mainarr, sigp, y);
                          }
 		         break;
