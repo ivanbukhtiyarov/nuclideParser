@@ -96,6 +96,7 @@ namespace openbps {
 
     pugi::xml_node read_chain_xml(const std::string& filename);
     xt::xarray<double> form_matrix(Chain& chainer, Materials& mat);
+    xt::xarray<double> form_sigp(Chain& chainer, Materials& mat);
     xt::xarray<double> make_concentration(Chain& chainer, std::vector<std::string>& nameconc,
     		                              std::vector<double>& ro);
 } // namespace openbps

@@ -154,11 +154,11 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
     }
 }
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y){
            double dt {configure::timestep/configure::numstep};
 	   std::vector<std::size_t> shape = { y.size() };
 	   std::vector<std::size_t> dshape = { y.size(), y.size() };
-           xt::xarray<double> sigp = xt::zeros<double>(shape);
+           //xt::xarray<double> sigp = xt::zeros<double>(shape);
            xt::xarray<double> ro = xt::zeros<double>(shape);
            xt::xarray<double> roo = xt::zeros<double>(shape);
            xt::xarray<double> rrr = xt::zeros<double>(shape);
@@ -178,19 +178,17 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
                }
            }
            for (size_t i=0; i < N; i++) {
-               aa = matrix(i, i);
                matrix(i, i) = 0.0;
-	       sigp(i) = xt::sum(xt::col(matrix, i))(0) + aa;
-
+	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
            }
            arr = sigp * dt;
            disr = xt::exp(-arr);
            rest = 1 - disr;
            for (size_t i=0; i < N; i++) {
                if (rest(i) < 1.e-10) rest(i) = arr(i);
-               if (arr(i) > 0.0) er(i) = rest(i)/arr(i);
+               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
                for (size_t j=0; j < N; j++) {
-               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j)/sigp(j);
+               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
 
                }
            }
@@ -206,7 +204,7 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y){
 	            t++;
                     for (size_t iparent=0; iparent < N; iparent++) {
 	                     for (size_t ichild=0; ichild < N; ichild++) {
-	                         arrtemp(ichild, iparent) = matrix(ichild, iparent)*rrr(iparent);
+	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
                         }
                      }
                      for (size_t ichild=0; ichild < N; ichild++) {
@@ -331,7 +329,10 @@ void init_solver() {
                 	 exponental(mainarr, y);
 		         break;
                        case configure::Mode::iteration:
-                	 iterative(mainarr, y);
+                         {
+                          xt::xarray<double> sigp {form_sigp(chain, mat);} ;
+                	  iterative(mainarr, sigp, y);
+                         }
 		         break;
                        case configure::Mode::chebyshev:
                          if (configure::order == 8) {

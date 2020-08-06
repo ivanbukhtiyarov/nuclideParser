@@ -28,7 +28,7 @@ void init_solver();
 
 void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y);
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y);
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y);
 
 void cram(xt::xarray<double>& matrix, xt::xarray<double>& y, 
                                       xt::xarray<std::complex<double>>& alpha, 

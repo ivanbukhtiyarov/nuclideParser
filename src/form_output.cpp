@@ -261,6 +261,36 @@ and so on
 
   }
   //
+  xt::xarray<double> form_sigp(Chain& chainer, Materials& mat) {
+  	size_t NN {chainer.nuclides.size()};
+  	int k {0};
+  	xt::xarray<int>::shape_type shape = {NN};
+  	xt::xarray<double> result = xt::zeros<double>(shape);
+  	double decay_ {0.0};
+
+  	for (int i = 0; i < NN; i++) {
+
+          if (chainer.nuclides[i].half_life > 0) { //~0
+
+          	decay_ = log(2.0) / chainer.nuclides[i].half_life;
+          	result(i) = decay_;
+          }
+          if ((mat.compos != nullptr) && (mat.compos->energy_number > 0)) {// 0 --  4-5 secs
+
+             for (auto& obj : mat.compos->xslib) {//0 - 4,5 secs per iteration
+          	   if (obj.xsname == chainer.nuclides[i].name) { // average 1 sec max 4 s
+                     double rr {0.0};
+                     for (auto& r: obj.rxs) {rr += r;}
+                   }
+                   result(i) += rr * PWD;
+             }
+          }
+        }
+            
+  	return result;
+
+  }
+  //
   xt::xarray<double> make_concentration(Chain& chainer, std::vector<std::string>& nameconc,
   		                              std::vector<double>& ro) {
   	size_t NN {chainer.nuclides.size()};
