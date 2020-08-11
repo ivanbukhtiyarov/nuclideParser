@@ -25,8 +25,11 @@ void Materials::xml_add_material(pugi::xml_node node) {
     nameofn.append_child(pugi::node_pcdata).set_value(join(namenuclides," ").c_str());
     auto concnod = material.append_child("conc");
     concnod.append_child(pugi::node_pcdata).set_value(joinDouble(conc, " ").c_str());
+    std :: cout << "TROUBLE ?" << std ::endl;
     auto dconcnod = material.append_child("dconc");
+    std :: cout << "TROUBLE ??" << std ::endl;
     dconcnod.append_child(pugi::node_pcdata).set_value(joinDouble(d_conc, " ").c_str());
+    std :: cout << "NO TROUBLE !!" << std ::endl;
 }
 
 void Materials::add_nuclide(std::string& extname, double extconc, bool isderiv) {
@@ -35,8 +38,11 @@ void Materials::add_nuclide(std::string& extname, double extconc, bool isderiv) 
 	this->namenuclides.push_back(extname);
 	if (!isderiv) {
 	    this->conc.push_back(extconc);
+            this->d_conc.push_back(0.0);
 	} else {
+            std :: cout <<"EVER HERE!"<<std::endl;
 	    this->d_conc.push_back(extconc);
+            this->conc.push_back(0.0);
 	}
     } else {
        auto index = std::distance(this->namenuclides.begin(), it);
@@ -86,6 +92,7 @@ void form_materials_xml(std::vector<Materials> m_arr, std::string xml_path) {
     auto materials = doc.append_child("materials");
     for(int i = 0; i < m_arr.size(); i++) {
         m_arr[i].xml_add_material(materials);
+        std :: cout << "material was added" << std ::endl;
     }
     bool saveSucceeded = doc.save_file(xml_path.c_str(), PUGIXML_TEXT("  "));
     //assert(saveSucceeded);

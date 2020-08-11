@@ -466,13 +466,16 @@ void init_solver() {
                          }
                 	 break;
                      }
-		     std::cout << "RESULT OF CALCULATION IS: " <<  y.size() << std::endl;
+		     
 	             for (size_t j = 0; j < y.size(); j++) {
-			 std::cout << chain.nuclides[j].name << " = " << y[j] << std::endl;
+			 std::cout << chain.nuclides[j].name << " = " << y[j] <<" with error = " <<dy[j]<< std::endl;
 			 if (configure::rewrite) mat.add_nuclide(chain.nuclides[j].name, y[j]);
 			 if (configure::rewrite && configure::uncertantie_mod) mat.add_nuclide(chain.nuclides[j].name, dy[j], true);
 		     }
+                     std::cout << "RESULT OF CALCULATION IS: " <<  dy.size() << std::endl;
+                     std::cout << "RESULT OF CALCULATION IS: " <<  y.size() << std::endl;
 	             if (configure::outwrite) {
+                                std::cout << "CHECK IN: " <<  y.size() << std::endl;
 	             		std::ofstream myfile("outlog.csv", std::ofstream::app);
 	             		if (myfile.is_open()) {
 	             		    myfile << mat.name;
@@ -494,6 +497,7 @@ void init_solver() {
 	             		          myfile << t << ";" << actval<<";" << qval << "\n";
 	             		    }
 	             		    myfile.close();
+                                    std::cout << "CHECK OUT: " <<  y.size() << std::endl;
 	             		}
 	             	    }
 		}

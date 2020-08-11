@@ -2,13 +2,14 @@
 <configure>
 
   <chain>./Xmls/dchain_u235_l1.xml</chain>
-  <reaction>./Xmls/reactions.xml</reaction>
-  <numbers>10</numbers>
-  <timestep>1.0</timestep>
+  <reaction>./Xmls/reaction1s.xml</reaction>
+  <numbers>100</numbers>
+  <timestep>100.0</timestep>
   <method>iteration</method>
-  <inpmaterials>./Xmls/materials_test.xml</inpmaterials>
-  <outmaterials>./Xmls/materials_res.xml</outmaterials>
+  <inpmaterials>./Xmls/materials_res1.xml</inpmaterials>
+  <outmaterials>./Xmls/materials_res1.xml</outmaterials>
   <epb>1.e-5</epb>
   <uncertanties>true</uncertanties>
+  <decay_print>true</decay_print>
   <cram_order>16</cram_order>
 </configure>
