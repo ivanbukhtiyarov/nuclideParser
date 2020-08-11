@@ -13,6 +13,7 @@ namespace openbps {
         temp.type = node.attribute("type").value();
         temp.target = node.attribute("target").value();
         temp.branching_ratio = atof(node.attribute("branching_ratio").value());
+        temp.d_branching_ratio = atof(node.attribute("d_branching_ratio").value());
         return temp;
     }
 
@@ -57,6 +58,7 @@ namespace openbps {
         temp.reactions = atoi(node.attribute("reactions").value());
         temp.half_life = 0;
         temp.half_life = atof(node.attribute("half_life").value());
+        temp.d_half_life = atof(node.attribute("d_half_life").value());
         std::cout << "Parse start for " << temp.name << std::endl;
         if (temp.decay_modes > 0) {
             temp.decay_energy = atof(node.attribute("decay_energy").value());

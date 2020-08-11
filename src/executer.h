@@ -28,17 +28,17 @@ void init_solver();
 
 void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y);
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y);
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y);
 
-void cram(xt::xarray<double>& matrix, xt::xarray<double>& y, 
-                                      xt::xarray<std::complex<double>>& alpha, 
-                                      xt::xarray<std::complex<double>>& theta, 
+void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
+                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy);
+
+void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
+                                      xt::xarray<std::complex<double>>& alpha,
+                                      xt::xarray<std::complex<double>>& theta,
                                       int order, double alpha0);
 }
 
 }
-
-
-
 
 #endif /* SRC_EXECUTER_H_ */

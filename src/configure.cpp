@@ -127,6 +127,9 @@ void read_conigure_xml()
           if (check_for_node(root, "is_outrewrite")) {
               rewrite = get_node_value_bool(root, "is_outrewrite");
           }
+          if (check_for_node(root, "uncertanties")) {
+              uncertantie_mod = get_node_value_bool(root, "uncertanties");
+          }
 }
 
 //! Read input XML files

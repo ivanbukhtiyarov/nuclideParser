@@ -30,7 +30,7 @@ add_definitions(-DHAVE_CBLAS=1)
 #find_package(LAPACK REQUIRED)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 #message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
-m#essage(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
+#message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 
 #Binary build
 #Check compiler options

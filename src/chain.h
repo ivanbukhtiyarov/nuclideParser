@@ -13,7 +13,7 @@
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
 
 namespace openbps {
-    
+
     class Timer {
         using clock_t = std::chrono::high_resolution_clock;
         using microseconds = std::chrono::microseconds;
@@ -46,6 +46,7 @@ namespace openbps {
         std::string type;
         std::string target;
         double branching_ratio;
+        double d_branching_ratio;
     };
 
     struct s_reaction {
@@ -57,6 +58,7 @@ namespace openbps {
     struct s_nuclide {
         std::string name;
         double half_life;
+        double d_half_life;
         double decay_energy;
         size_t decay_modes;
         size_t reactions;
@@ -96,9 +98,12 @@ namespace openbps {
 
     pugi::xml_node read_chain_xml(const std::string& filename);
     xt::xarray<double> form_matrix(Chain& chainer, Materials& mat);
+    xt::xarray<double> form_sigp(Chain& chainer, Materials& mat);
+    xt::xarray<double> form_dmatrix(Chain& chainer, Materials& mat);
+    xt::xarray<double> form_dsigp(Chain& chainer, Materials& mat);
     xt::xarray<double> make_concentration(Chain& chainer, std::vector<std::string>& nameconc,
     		                              std::vector<double>& ro);
+
 } // namespace openbps
 
 #endif // CHAIN_H
-

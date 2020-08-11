@@ -5,9 +5,10 @@
   <reaction>./Xmls/reactions.xml</reaction>
   <numbers>10</numbers>
   <timestep>1.0</timestep>
-  <method>chebyshev</method>
-  <inpmaterials>./Xmls/materialsu5.xml</inpmaterials>
+  <method>iteration</method>
+  <inpmaterials>./Xmls/materials_test.xml</inpmaterials>
   <outmaterials>./Xmls/materials_res.xml</outmaterials>
   <epb>1.e-5</epb>
+  <uncertanties>true</uncertanties>
   <cram_order>16</cram_order>
 </configure>

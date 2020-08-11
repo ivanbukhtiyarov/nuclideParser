@@ -18,7 +18,7 @@
 #include<Eigen/SparseLU>
 #include <vector>
 
- 
+
 typedef Eigen::SparseMatrix<double> SpMat;
 
 using namespace std::complex_literals;
@@ -63,7 +63,7 @@ xt::xarray<double> theta_48r{
     +1.901323489060250e+1, +1.885508331552577e+1,
     -1.734689708174982e+1, +1.316284237125190e+1};
 
-xt::xarray<double> theta_48i{ 
+xt::xarray<double> theta_48i{
     +6.233225190695437e+1, +4.057499381311059e+1,
     +4.325515754166724e+1, +3.281615453173585e+1,
     +1.558061616372237e+1, +1.076629305714420e+1,
@@ -151,11 +151,11 @@ void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
     }
 }
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y) {
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y){
            double dt {configure::timestep/configure::numstep};
 	   std::vector<std::size_t> shape = { y.size() };
 	   std::vector<std::size_t> dshape = { y.size(), y.size() };
-           xt::xarray<double> sigp = xt::zeros<double>(shape);
+           //xt::xarray<double> sigp = xt::zeros<double>(shape);
            xt::xarray<double> ro = xt::zeros<double>(shape);
            xt::xarray<double> roo = xt::zeros<double>(shape);
            xt::xarray<double> rrr = xt::zeros<double>(shape);
@@ -175,19 +175,17 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y) {
                }
            }
            for (size_t i=0; i < N; i++) {
-               aa = matrix(i, i);
                matrix(i, i) = 0.0;
-	       sigp(i) = xt::sum(xt::col(matrix, i))(0) + aa;
-
+	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
            }
            arr = sigp * dt;
            disr = xt::exp(-arr);
            rest = 1 - disr;
            for (size_t i=0; i < N; i++) {
                if (rest(i) < 1.e-10) rest(i) = arr(i);
-               if (arr(i) > 0.0) er(i) = rest(i)/arr(i);
+               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
                for (size_t j=0; j < N; j++) {
-               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j)/sigp(j);
+               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
 
                }
            }
@@ -239,10 +237,115 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& y) {
               }
            }//numstep
 }
+//
+void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
+                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy) {
+           double dt {configure::timestep/configure::numstep};
+	   std::vector<std::size_t> shape = { y.size() };
+	   std::vector<std::size_t> dshape = { y.size(), y.size() };
+           //xt::xarray<double> sigp = xt::zeros<double>(shape);
+           xt::xarray<double> ro = xt::zeros<double>(shape);
+           xt::xarray<double> dro = xt::zeros<double>(shape);
+           xt::xarray<double> roo = xt::zeros<double>(shape);
+           xt::xarray<double> rrr = xt::zeros<double>(shape);
+           xt::xarray<double> drr = xt::zeros<double>(shape);
+           xt::xarray<double> arr = xt::zeros<double>(shape);
+           xt::xarray<double> arrtemp = xt::zeros<double>(dshape);
+           xt::xarray<double> drrtemp = xt::zeros<double>(dshape);
+           xt::xarray<double> disr = xt::zeros<double>(shape);
+           xt::xarray<double> rest = xt::zeros<double>(shape);
+           xt::xarray<double> et = xt::ones<double>(shape);
+           xt::xarray<double> er = xt::ones<double>(shape);
+           xt::xarray<double> ds = xt::ones<double>(shape);
+           xt::xarray<double> dr = xt::ones<double>(shape);
+           size_t N {y.size()};
+           double aa {0.0};
+           if (configure::outwrite) {
+               configure::dumpoutput.clear();
+               configure::dumpoutput.resize(configure::numstep);
+               for (int k = 0; k < configure::numstep; k++) {
+        	   configure::dumpoutput[k].resize(y.size());
+               }
+           }
+           for (size_t i=0; i < N; i++) {
+               matrix(i, i) = 0.0;
+               dmatrix(i, i) = 0.0;
+	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
+           }
+           arr = sigp * dt;
+           disr = xt::exp(-arr);
+           rest = 1 - disr;
+           for (size_t i=0; i < N; i++) {
+               if (rest(i) < 1.e-10) rest(i) = arr(i);
+               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
+               for (size_t j=0; j < N; j++) {
+               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
+                    if (sigp(j) > 0) dmatrix(i,j) = dmatrix(i,j) / sigp(j);
 
-void cram(xt::xarray<double>& matrix, xt::xarray<double>& y, 
-                                      xt::xarray<std::complex<double>>& alpha, 
-                                      xt::xarray<std::complex<double>>& theta, 
+               }
+           }
+           et = 1.0 - er;
+           roo = y;
+           for (int k = 0; k < configure::numstep; k++) {
+               bool proceed {true};
+               int t = 0;
+               rrr = y * rest;       //!< rest
+               drr = dy * rest;
+               dro = y * disr * (dy / y + dsigp * dt);
+               dy = dro;
+               y = y * disr;         //!< disappearance
+               ro = y;
+               while (proceed) {
+	            t++;
+                    for (size_t iparent=0; iparent < N; iparent++) {
+	                     for (size_t ichild=0; ichild < N; ichild++) {
+	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
+                                 drrtemp(ichild, iparent) = matrix(ichild, iparent) * drr(iparent) +  
+                                                            dmatrix(ichild, iparent) * rrr(iparent);
+                        }
+                     }
+                     for (size_t ichild=0; ichild < N; ichild++) {
+                         aa = xt::sum(xt::row(arrtemp, ichild))(0);
+                         ro(ichild) += aa;
+                         dro(ichild) += xt::sum(xt::row(drrtemp, ichild))(0);
+                     }
+                     arr = ro - y;
+                     ds = dro - dy;
+                     rrr = arr * et;
+                     drr = ds * et;
+                     y += arr * er;
+                     dy += ds * er;
+                     ro = y;
+                     dro = dy;
+                     for (int iparent=0; iparent < N; iparent++) {
+                         if (roo(iparent) > 0.0) {
+                             if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
+                                  proceed=true;
+                                  break;
+                             } else {
+                        	 proceed=false;
+                             }
+                        }
+                     }
+                     if (t > 25) {
+
+                         std::cout << "Exceed :number of iteration " << std::endl;
+                         proceed=false;
+                     }
+                     roo = y;
+               }
+               if (configure::outwrite) {
+                   for (int i = 0; i < y.size(); i++) {
+                       configure::dumpoutput[k][i] = y(i);
+                   }
+              }
+           }//numstep
+}
+
+
+void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
+                                      xt::xarray<std::complex<double>>& alpha,
+                                      xt::xarray<std::complex<double>>& theta,
                                       int order, double alpha0) {
 
     double dt {configure::timestep/configure::numstep};
@@ -264,31 +367,31 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
     std::complex<double> c(1,0);
     A.reserve(n * 10);
     Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>, Eigen::COLAMDOrdering<int> >   solver;
-    // fill A and b; 
+    // fill A and b;
     for (size_t i=0; i < n; i++) {
          ytemp(i) = y(i);
          zytemp(i) = c * y(i);
          for (size_t j=0; j < n; j++) {
-             if (matrix(i, j) != 0.) A.insert(i, j) = c * matrix(i, j);        
+             if (matrix(i, j) != 0.) A.insert(i, j) = c * matrix(i, j);
          }
     }
-    A.makeCompressed(); 
-    
+    A.makeCompressed();
+
     for (int t=0; t < configure::numstep; t++) {
-        
+
         for (int it=0; it < order; it++) {
             std :: cout << "Number of iterantions is "<<it<< std::endl;
             for (size_t j=0; j < n; j++) {
-                 A.coeffRef(j,j) = c * matrix(j, j) - theta(it);        
+                 A.coeffRef(j,j) = c * matrix(j, j) - theta(it);
             }
             // Compute the ordering permutation vector from the structural pattern of A
-            solver.analyzePattern(A); 
-            // Compute the numerical factorization 
+            solver.analyzePattern(A);
+            // Compute the numerical factorization
             solver.factorize(A);
-            //Use the factors to solve the linear system 
+            //Use the factors to solve the linear system
             zytemp.real() = ytemp;
             x = solver.solve(zytemp);
-            
+
             x = alpha(it) * x;
 	    ytemp += 2 * x.real();
             //y += 2 * real(alpha(it) * xt::linalg::solve(matrix - theta(it) * ident, zy));
@@ -315,20 +418,38 @@ void init_solver() {
             //forming from reactions INP
             std::vector<Materials> v = read_materials_from_inp(configure::inmaterials_file);
             matchcompositions(compositions, v);
+            
 	    for (auto& mat : v) {
 	         if (mat.name != "all") {
-		     xt::xarray<double> mainarr;
+		     xt::xarray<double> mainarr, dmainarr;
 		     std::vector<std::size_t> shape = { chain.nuclides.size() };
 		     xt::xarray<double> y = make_concentration(chain, mat.namenuclides, mat.conc);
+                     if (configure::uncertantie_mod) std :: cout << "UNCERTATNTIES MOD!!!!!" << std :: endl;
+                     xt::xarray<double> dy = make_concentration(chain, mat.namenuclides, mat.d_conc);
+                     if (configure::uncertantie_mod) std :: cout << "UNCERTATNTIES MOD!!!!!" << std :: endl;
 		     xt::xarray<double> y_old = xt::zeros<double>(shape);
+                     xt::xarray<double> dy_old = xt::zeros<double>(shape);
 		     y_old = y;
+                     dy_old = dy;
 	             mainarr = form_matrix(chain, mat);
                      switch (configure::calcmode) {
                        case configure::Mode::exponent:
                 	 exponental(mainarr, y);
 		         break;
                        case configure::Mode::iteration:
-                	 iterative(mainarr, y);
+                         {
+                          if (configure::uncertantie_mod) std :: cout << "1. out: out uncertanties mode" << std :: endl;
+                          xt::xarray<double> sigp {form_sigp(chain, mat)} ;
+                          if (configure::uncertantie_mod) {
+                              xt::xarray<double> dsigp {form_dsigp(chain, mat)};
+                              dmainarr = form_dmatrix(chain, mat);
+                              if (configure::uncertantie_mod) std :: cout << "2. out: out uncertanties mode" << std :: endl;
+                              diterative(mainarr, sigp, y,
+                                        dmainarr, dsigp, dy);
+                          } else {
+                	      iterative(mainarr, sigp, y);
+                          }
+                         }
 		         break;
                        case configure::Mode::chebyshev:
                          if (configure::order == 8) {
@@ -357,7 +478,7 @@ void init_solver() {
                                              //std :: cout << "FIND RES "<<chain.nuclides[j].name.rfind("U")<<std::endl;
 	             		              if ((chain.nuclides[j].half_life > 0)) {
 	             		        	  actval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 1.e+24;
-	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 
+	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] *
                                                                                                    chain.nuclides[j].decay_energy * 1.e+24 *
                                                                                                    1.e-6;
                                                   //qval += configure::dumpoutput[t][j];
@@ -374,10 +495,11 @@ void init_solver() {
 	    if (configure::rewrite) {
 		form_materials_xml(v, configure::outmaterials_file);
 	    }
+            
 
 
 }
 
-}
+}//namespace executer
 
-}
+}//namespace openbps
