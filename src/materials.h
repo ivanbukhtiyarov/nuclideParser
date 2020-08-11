@@ -12,7 +12,7 @@ class Materials {
         Materials();
         void xml_add_material(pugi::xml_node node);
         void check_node(pugi::xml_node node);
-        void add_nuclide(std::string& extname, double extconc);
+        void add_nuclide(std::string& extname, double extconc, bool isderiv=false);
         std::string name;
         std::vector<std::string> namenuclides;
         std::vector<double> conc;

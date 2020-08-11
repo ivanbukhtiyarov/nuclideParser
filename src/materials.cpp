@@ -29,14 +29,22 @@ void Materials::xml_add_material(pugi::xml_node node) {
     dconcnod.append_child(pugi::node_pcdata).set_value(joinDouble(d_conc, " ").c_str());
 }
 
-void Materials::add_nuclide(std::string& extname, double extconc) {
+void Materials::add_nuclide(std::string& extname, double extconc, bool isderiv) {
     auto it = std::find(this->namenuclides.begin(), this->namenuclides.end(), extname);
     if (it == this->namenuclides.end()) {
 	this->namenuclides.push_back(extname);
-	this->conc.push_back(extconc);
+	if (!isderiv) {
+	    this->conc.push_back(extconc);
+	} else {
+	    this->d_conc.push_back(extconc);
+	}
     } else {
        auto index = std::distance(this->namenuclides.begin(), it);
-       this->conc[index] = extconc;
+       if (!isderiv) {
+           this->conc[index] = extconc;
+       } else {
+	   this->d_conc[index] = extconc;
+       }
     }
 
 }

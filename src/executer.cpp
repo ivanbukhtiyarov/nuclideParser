@@ -15,7 +15,7 @@
 #include "../extern/xtensor/include/xtensor/xbuilder.hpp"
 #include "../extern/xtensor/include/xtensor/xcomplex.hpp"
 #include <Eigen/Sparse>
-#include<Eigen/SparseLU>
+#include <Eigen/SparseLU>
 #include <vector>
 
 
@@ -291,7 +291,14 @@ void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray
                int t = 0;
                rrr = y * rest;       //!< rest
                drr = dy * rest;
-               dro = y * disr * (dy / y + dsigp * dt);
+               dro = disr * dy  + dsigp * dt;
+               /*
+               for (size_t iparent=0; iparent < N; iparent++) {
+                   std :: cout << "DRO: " << dro(iparent) << std::endl;
+                   std :: cout << "DY: " << dy(iparent) << std::endl;
+                   std :: cout << "DSIGP: " << dsigp(iparent) << std::endl;
+               }
+               */
                dy = dro;
                y = y * disr;         //!< disappearance
                ro = y;
@@ -463,7 +470,7 @@ void init_solver() {
 	             for (size_t j = 0; j < y.size(); j++) {
 			 std::cout << chain.nuclides[j].name << " = " << y[j] << std::endl;
 			 if (configure::rewrite) mat.add_nuclide(chain.nuclides[j].name, y[j]);
-
+			 if (configure::rewrite && configure::uncertantie_mod) mat.add_nuclide(chain.nuclides[j].name, dy[j], true);
 		     }
 	             if (configure::outwrite) {
 	             		std::ofstream myfile("outlog.csv", std::ofstream::app);
