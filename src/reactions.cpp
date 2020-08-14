@@ -194,17 +194,21 @@ void  Composition::get_reaction() {
 					    this->energies_[ng]);
         	}
         	}
+        	int ng_d = ixs->xs_.size();
         	if (this->d_flux_.size() > 0) {
-                if (this->d_flux_.size() == ng) {
+                if (this->d_flux_.size() == ng_d) {
         		d_cuflux = this->d_flux_;
         	} else {
         		d_cuflux = collapsing(this->energies_[this->d_flux_.size()],
         		                    this->d_flux_,
-					    this->energies_[ng]);
+					    this->energies_[ng_d]);
         	}
         	}
             for (int i = 0; i != ng; i++) {
-            	ixs->d_rxs[0] += cuflux[i] * ixs->d_xs_[i] + d_cuflux[i] * ixs->xs_[i];
+            	ixs->d_rxs[0] += cuflux[i] * ixs->d_xs_[i];
+            }
+            for (int i = 0; i != ng_d; i++) {
+                ixs->d_rxs[0] += d_cuflux[i] * ixs->xs_[i];
             }
 
         }
