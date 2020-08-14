@@ -162,15 +162,16 @@ void  Composition::get_reaction() {
 		ixs->rxs[0] = 0.0;
         if (!ixs->xs_.empty()) {
         	int ng = ixs->xs_.size();
-        	std::vector<double> cuflux;
-        	if ((this->flux_.size() > 0) && (this->flux_.size() == ng)) {
+        	std::vector<double> cuflux(ng, 1.0);
+        	if (this->flux_.size() > 0) {
+        	if (this->flux_.size() == ng) {
         		cuflux = this->flux_;
         	} else {
         		cuflux = collapsing(this->energies_[this->flux_.size()],
         		                    this->flux_,
 					    this->energies_[ng]);
         	}
-
+        	}
             for (int i = 0; i != ng; i++) {
             	ixs->rxs[0] += cuflux[i] * ixs->xs_[i];
             }
@@ -181,22 +182,26 @@ void  Composition::get_reaction() {
 		ixs->d_rxs.resize(1);
 		ixs->d_rxs[0] = 0.0;
         if (!ixs->d_xs_.empty()) {
-        	int ng = ixs->xs_.size();
-        	std::vector<double> cuflux;
-                std::vector<double> d_cuflux;
-        	if ((this->flux_.size() > 0) && (this->flux_.size() == ng)) {
+        	int ng = ixs->d_xs_.size();
+        	std::vector<double> cuflux(ng, 1.0);
+        	std::vector<double> d_cuflux(ng, 0.0);
+        	if (this->flux_.size() > 0) {
+        	if (this->flux_.size() == ng) {
         		cuflux = this->flux_;
         	} else {
         		cuflux = collapsing(this->energies_[this->flux_.size()],
         		                    this->flux_,
 					    this->energies_[ng]);
         	}
-                if ((this->d_flux_.size() > 0) && (this->d_flux_.size() == ng)) {
+        	}
+        	if (this->d_flux_.size() > 0) {
+                if (this->d_flux_.size() == ng) {
         		d_cuflux = this->d_flux_;
         	} else {
         		d_cuflux = collapsing(this->energies_[this->d_flux_.size()],
         		                    this->d_flux_,
 					    this->energies_[ng]);
+        	}
         	}
             for (int i = 0; i != ng; i++) {
             	ixs->d_rxs[0] += cuflux[i] * ixs->d_xs_[i] + d_cuflux[i] * ixs->xs_[i];
