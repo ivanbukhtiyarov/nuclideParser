@@ -66,7 +66,13 @@ Composition::Composition(pugi::xml_node node) {
 		this->xslib.push_back(parse_xs_xml_(tool, rxs, 0));
            }
            for (pugi::xml_node tool : node.child("xslibs").children("dxslib")) {
-		this->xslib.push_back(parse_xs_xml_(tool, rxs, 1));
+		s_xs_ deriv_rxs {parse_xs_xml_(tool, rxs, 1)};
+		for (auto ixs = this->xslib.begin(); ixs != this->xslib.end(); ixs++) {
+		    if (ixs->xsname == deriv_rxs.xsname && ixs->xstype == deriv_rxs.xstype) {
+			ixs->d_rxs = deriv_rxs.d_rxs;
+			ixs->d_xs_ = deriv_rxs.d_xs_;
+		    }
+		}
            }
 	}
         
@@ -157,7 +163,7 @@ void Composition::deploy_all(Composition& externcompos) {
 void  Composition::get_reaction() {
 
 	for (auto ixs = this->xslib.begin(); ixs != this->xslib.end(); ixs++) {
-	if (ixs->rxs.empty()){
+	if (ixs->rxs.empty()) {
 		ixs->rxs.resize(1);
 		ixs->rxs[0] = 0.0;
         if (!ixs->xs_.empty()) {
@@ -175,45 +181,45 @@ void  Composition::get_reaction() {
             for (int i = 0; i != ng; i++) {
             	ixs->rxs[0] += cuflux[i] * ixs->xs_[i];
             }
-
+            if (this->d_flux_.size() > 0) {
+        	if (ixs->d_rxs.empty()) {
+        	    ixs->d_rxs.resize(1);
+                    ixs->d_rxs[0] = 0.0;
+        	}
+        	std::vector<double> d_cuflux(ng, 0.0);
+        	if (this->d_flux_.size() == ng) {
+        	    d_cuflux = this->d_flux_;
+        	} else {
+        	    d_cuflux = collapsing(this->energies_[this->d_flux_.size()],
+        	        		                  this->d_flux_,
+        						  this->energies_[ng]);
+                }
+        	for (int i = 0; i != ng; i++) {
+        	    ixs->d_rxs[0] += d_cuflux[i] * ixs->xs_[i];
+        	}
+            }
         }
 	}
-        if (ixs->d_rxs.empty()){
-		ixs->d_rxs.resize(1);
-		ixs->d_rxs[0] = 0.0;
         if (!ixs->d_xs_.empty()) {
-        	int ng = ixs->d_xs_.size();
-        	std::vector<double> cuflux(ng, 1.0);
-        	std::vector<double> d_cuflux(ng, 0.0);
-        	if (this->flux_.size() > 0) {
+            if (ixs->d_rxs.empty()) {
+            	ixs->d_rxs.resize(1);
+            	ixs->d_rxs[0] = 0.0;
+            }
+            int ng = ixs->d_xs_.size();
+            std::vector<double> cuflux(ng, 1.0);
+            if (this->flux_.size() > 0) {
         	if (this->flux_.size() == ng) {
-        		cuflux = this->flux_;
+                    cuflux = this->flux_;
         	} else {
-        		cuflux = collapsing(this->energies_[this->flux_.size()],
-        		                    this->flux_,
-					    this->energies_[ng]);
+        	    cuflux = collapsing(this->energies_[this->flux_.size()],
+        		                this->flux_,
+					this->energies_[ng]);
         	}
-        	}
-        	int ng_d = ixs->xs_.size();
-        	if (this->d_flux_.size() > 0) {
-                if (this->d_flux_.size() == ng_d) {
-        		d_cuflux = this->d_flux_;
-        	} else {
-        		d_cuflux = collapsing(this->energies_[this->d_flux_.size()],
-        		                    this->d_flux_,
-					    this->energies_[ng_d]);
-        	}
-        	}
+            }
             for (int i = 0; i != ng; i++) {
             	ixs->d_rxs[0] += cuflux[i] * ixs->d_xs_[i];
             }
-            for (int i = 0; i != ng_d; i++) {
-                ixs->d_rxs[0] += d_cuflux[i] * ixs->xs_[i];
-            }
-
         }
-	}
-
 }
 }
 
@@ -262,13 +268,12 @@ void read_reactions_xml() {
 
 	for (std::vector<Composition>::iterator it = compositions.begin();
 	     it != compositions.end() ;++it) {
-        it->deploy_all(compositions[indexall]);
-        it->get_reaction();
+             it->deploy_all(compositions[indexall]);
+             it->get_reaction();
 	}
-
-
 }
 
 }
+
 
 
