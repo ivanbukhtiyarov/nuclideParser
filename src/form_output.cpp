@@ -321,7 +321,8 @@ and so on
 
           if (chainer.nuclides[i].half_life > 0) { //~0
 
-          	decay_ = log(2.0) / (chainer.nuclides[i].half_life * chainer.nuclides[i].half_life) * chainer.nuclides[i].d_half_life;
+          	decay_ = log(2.0) / (chainer.nuclides[i].half_life * chainer.nuclides[i].half_life) * chainer.nuclides[i].d_half_life;//-
+          	//decay_ = chainer.nuclides[i].d_half_life / chainer.nuclides[i].half_life;//+
           	result(i, i) = -decay_;
           	for (int j = 0; j < chainer.nuclides[i].decay_arr.size(); j++) {
           		if (chainer.nuclides[i].decay_arr[j].target != std::string("Nothing")) {
@@ -353,7 +354,7 @@ and so on
                       	       k = chainer.name_idx[chainer.nuclides[i].reaction_arr[j].target];
                       	       result(k, i) += drr * PWD;//*branching ratio
                       	   } else {// ELSE works 0.8-3 s
-
+                                   if (obj.xsname =="U235") std::cout <<"UU235 drr = " << drr <<std::endl;
                       		   for (int j = 0 ; j < chainer.nuclides[i].nfy.energies.size(); j++)  { //each iter 0,3 - 1,8 s
                       		        auto n_map = chainer.nuclides[i].nfy.yield_arr[j].product_data;
                       		        for (auto& item : n_map) {//0,0007 - 0,006 sec
@@ -401,7 +402,9 @@ and so on
 
           if (chainer.nuclides[i].half_life > 0) { //~0
 
-          	decay_ = log(2.0) / (chainer.nuclides[i].half_life * chainer.nuclides[i].half_life) * chainer.nuclides[i].d_half_life;
+          	
+          	decay_ = log(2.0) / (chainer.nuclides[i].half_life * chainer.nuclides[i].half_life) * chainer.nuclides[i].d_half_life;//-
+          	//decay_ = chainer.nuclides[i].d_half_life / chainer.nuclides[i].half_life;//+
           	result(i) = decay_;
           }
           if ((mat.compos != nullptr) && (mat.compos->energy_number > 0)) {// 0 --  4-5 secs

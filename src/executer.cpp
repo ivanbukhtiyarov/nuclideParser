@@ -349,6 +349,140 @@ void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray
            }//numstep
 }
 
+//
+void diterative2(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
+                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy) {
+           double dt {configure::timestep/configure::numstep};
+	   std::vector<std::size_t> shape = { y.size() };
+	   std::vector<std::size_t> dshape = { y.size(), y.size() };
+           //xt::xarray<double> sigp = xt::zeros<double>(shape);
+           xt::xarray<double> ro = xt::zeros<double>(shape);
+           xt::xarray<double> dro = xt::zeros<double>(shape);
+           xt::xarray<double> roo = xt::zeros<double>(shape);
+           xt::xarray<double> rrr = xt::zeros<double>(shape);
+           xt::xarray<double> drr = xt::zeros<double>(shape);
+           xt::xarray<double> arr = xt::zeros<double>(shape);
+           xt::xarray<double> arrtemp = xt::zeros<double>(dshape);
+           xt::xarray<double> drrtemp = xt::zeros<double>(dshape);
+           xt::xarray<double> disr = xt::zeros<double>(shape);
+           xt::xarray<double> rest = xt::zeros<double>(shape);
+           xt::xarray<double> et = xt::ones<double>(shape);
+           xt::xarray<double> er = xt::ones<double>(shape);
+           xt::xarray<double> es = xt::ones<double>(shape);
+           xt::xarray<double> ds = xt::ones<double>(shape);
+           xt::xarray<double> dr = xt::ones<double>(shape);
+           xt::xarray<double> ddr = xt::ones<double>(shape);
+           size_t N {y.size()};
+           double aa {0.0};
+           double dd {0.0};
+           if (configure::outwrite) {
+               configure::dumpoutput.clear();
+               configure::dumpoutput.resize(configure::numstep);
+               for (int k = 0; k < configure::numstep; k++) {
+        	   configure::dumpoutput[k].resize(y.size());
+               }
+           }
+           for (size_t i=0; i < N; i++) {
+               matrix(i, i) = 0.0;
+               dmatrix(i, i) = 0.0;
+	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
+           }
+           arr = sigp * dt;
+           disr = xt::exp(-arr);
+           rest = 1 - disr;
+           for (size_t i=0; i < N; i++) {
+               if (rest(i) < 1.e-10) rest(i) = arr(i);
+               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
+               for (size_t j=0; j < N; j++) {
+               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
+                    if (sigp(j) > 0) dmatrix(i,j) = dmatrix(i,j) / sigp(j);
+
+               }
+           }
+           et = 1.0 - er;
+           es = (er + disr) * dsigp;
+           
+           roo = y;
+           for (int k = 0; k < configure::numstep; k++) {
+               bool proceed {true};
+               int t = 0;
+               rrr = y * rest;       //!< rest
+               drr = dy * rest;
+               ddr = (sigp * dt * dsigp + rest * dy);
+               dr = y * disr * ddr;
+               dy = dy + sigp * dt * dsigp;
+               ds = y * disr * dy;
+               /*
+               for (size_t iparent=0; iparent < N; iparent++) {
+                   std :: cout << "DRO: " << dro(iparent) << std::endl;
+                   std :: cout << "DY: " << dy(iparent) << std::endl;
+                   std :: cout << "DSIGP: " << dsigp(iparent) << std::endl;
+               }
+               */
+               dro = dy;
+               y = y * disr;         //!< disappearance
+               ro = y;
+               while (proceed) {
+	            t++;
+                    for (size_t iparent=0; iparent < N; iparent++) {
+	                     for (size_t ichild=0; ichild < N; ichild++) {
+	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
+                                 if (t == 0) {
+                                     drrtemp(ichild, iparent) = dmatrix(ichild, iparent) + dy(iparent);
+                                 } else {
+                                     drrtemp(ichild, iparent) = dmatrix(ichild, iparent) + dr(iparent);
+                                     
+                                 }
+                                 drrtemp(ichild, iparent) = arrtemp(ichild, iparent) * drrtemp(ichild, iparent);
+                        }
+                     }
+                     for (size_t ichild=0; ichild < N; ichild++) {
+                         aa = xt::sum(xt::row(arrtemp, ichild))(0);
+                         dd = xt::sum(xt::row(drrtemp, ichild))(0);
+                         ro(ichild) += aa;
+                         dr(ichild) = aa * es(ichild);
+                         ds(ichild) += dd * er(ichild) + dr(ichild);
+                         dr(ichild) += dd * et(ichild); 
+                     }
+                     arr = ro - y;
+                     
+                     rrr = arr * et;
+                     
+                     y += arr * er;
+                     
+                     
+                     for (int iparent=0; iparent < N; iparent++) {
+                         if (y(iparent) < 0.0) y(iparent) = 0.0;
+                         if (arr(iparent) > 0.0) dr(iparent) = dr(iparent) / arr(iparent);
+                         if (dr(iparent) < 0.0) dr(iparent) = 0.0;
+                         if (y(iparent) > 0.0) dy(iparent) = ds(iparent) ;// y(iparent);
+                         //if (y(iparent) > 0.0) dy(iparent) = ds(iparent) / y(iparent);
+                     }
+                     ro = y;
+                     for (int iparent=0; iparent < N; iparent++) {
+                         if (roo(iparent) > 0.0) {
+                             if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
+                                  proceed=true;
+                                  break;
+                             } else {
+                        	 proceed=false;
+                             }
+                        }
+                     }
+                     if (t > 25) {
+
+                         std::cout << "Exceed :number of iteration " << std::endl;
+                         proceed=false;
+                     }
+                     roo = y;
+               }
+               if (configure::outwrite) {
+                   for (int i = 0; i < y.size(); i++) {
+                       configure::dumpoutput[k][i] = y(i);
+                   }
+              }
+           }//numstep
+}
 
 void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
                                       xt::xarray<std::complex<double>>& alpha,
@@ -451,7 +585,7 @@ void init_solver() {
                               xt::xarray<double> dsigp {form_dsigp(chain, mat)};
                               dmainarr = form_dmatrix(chain, mat);
                               if (configure::uncertantie_mod) std :: cout << "2. out: out uncertanties mode" << std :: endl;
-                              diterative(mainarr, sigp, y,
+                              diterative2(mainarr, sigp, y,
                                         dmainarr, dsigp, dy);
                           } else {
                 	      iterative(mainarr, sigp, y);
@@ -468,7 +602,7 @@ void init_solver() {
                      }
 		     
 	             for (size_t j = 0; j < y.size(); j++) {
-			 std::cout << chain.nuclides[j].name << " = " << y[j] <<" with error = " <<dy[j]<< std::endl;
+			 if (y[j] > 0 && dy[j]/y[j] > 1.0) std::cout << chain.nuclides[j].name << " = " << y[j] <<" with error = " <<dy[j]<< std::endl;
 			 if (configure::rewrite) mat.add_nuclide(chain.nuclides[j].name, y[j]);
 			 if (configure::rewrite && configure::uncertantie_mod) mat.add_nuclide(chain.nuclides[j].name, dy[j], true);
 		     }
@@ -484,6 +618,8 @@ void init_solver() {
 	             		    for (size_t t = 0; t < configure::numstep; t++) {
                                          double actval {0.0};
 	             		         double qval {0.0};
+                                         double acterr {0.0};
+	             		         double qerr {0.0};
 	             		         for (size_t j = 0; j < y.size(); j++) {
                                              //std :: cout << "FIND RES "<<chain.nuclides[j].name.rfind("U")<<std::endl;
 	             		              if ((chain.nuclides[j].half_life > 0)) {
@@ -491,10 +627,22 @@ void init_solver() {
 	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] *
                                                                                                    chain.nuclides[j].decay_energy * 1.e+24 *
                                                                                                    1.e-6;
+                                                  if (configure::uncertantie_mod && y[j] > 0) {
+                                                      /*acterr += log(2.0) / (chain.nuclides[j].half_life * chain.nuclides[j].half_life) *
+                                                                chain.nuclides[j].d_half_life * configure::dumpoutput[t][j] * 1.e+24;*/
+                                                      acterr += log(2.0) / chain.nuclides[j].half_life * dy[j] * 1.e+24;
+                                                      qerr   += (log(2.0) / (chain.nuclides[j].half_life * chain.nuclides[j].half_life) *
+                                                                chain.nuclides[j].d_half_life * configure::dumpoutput[t][j] * 1.e+24 +
+                                                                log(2.0) / chain.nuclides[j].half_life * dy[j] * 1.e+24) * chain.nuclides[j].decay_energy * 1.e-6;
+                                                  } 
                                                   //qval += configure::dumpoutput[t][j];
 	             		              }
 	             		          }
-	             		          myfile << t << ";" << actval<<";" << qval << "\n";
+                                          if (!configure::uncertantie_mod) {
+	             		              myfile << t << ";" << actval<<";" << qval << "\n";
+                                          } else {
+                                              myfile << t << ";" << actval<<";" << qval<< ";" << acterr<<";" << qerr << "\n";
+                                          } 
 	             		    }
 	             		    myfile.close();
                                     std::cout << "CHECK OUT: " <<  y.size() << std::endl;

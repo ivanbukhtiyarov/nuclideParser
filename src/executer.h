@@ -33,6 +33,9 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<
 void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
                 xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy);
 
+void diterative2(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
+                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy);
+
 void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
                                       xt::xarray<std::complex<double>>& alpha,
                                       xt::xarray<std::complex<double>>& theta,
