@@ -1,6 +1,6 @@
-#include "materials.h"
-#include "configure.h"
-#include "parse.h"
+#include "openbps/materials.h"
+#include "openbps/configure.h"
+#include "openbps/parse.h"
 #include <memory>
 #include <algorithm>
 #include "../extern/pugiData/pugixml.h"

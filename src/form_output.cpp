@@ -1,9 +1,9 @@
 #include <cmath>
-#include "chain.h"
-#include "functionals.h"
-#include "parse.h"
-#include "configure.h"
-#include "reactions.h"
+#include "openbps/chain.h"
+#include "openbps/functionals.h"
+#include "openbps/parse.h"
+#include "openbps/configure.h"
+#include "openbps/reactions.h"
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
 #include "../extern/xtensor/include/xtensor/xadapt.hpp"
 //

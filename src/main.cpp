@@ -1,6 +1,6 @@
-#include "nuclide_class.h"
-#include "configure.h"
-#include "executer.h"
+#include "openbps/nuclide_class.h"
+#include "openbps/configure.h"
+#include "openbps/executer.h"
 
 int main(int arc, char *argv[]) {
     using namespace openbps;

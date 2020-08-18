@@ -1,11 +1,11 @@
-#include "reactions.h"
+#include "openbps/reactions.h"
 #include <vector>
 #include <map>
 #include <iostream>
 #include <string.h>
-#include "configure.h"
-#include "functionals.h"
-#include "parse.h"
+#include "openbps/configure.h"
+#include "openbps/functionals.h"
+#include "openbps/parse.h"
 #include "../extern/pugiData/pugixml.h"
 #include "../extern/xtensor/include/xtensor/xarray.hpp"
 #include "../extern/xtensor/include/xtensor/xadapt.hpp"

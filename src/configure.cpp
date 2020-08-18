@@ -1,6 +1,6 @@
-#include "configure.h"
+#include "openbps/configure.h"
 #include "../extern/pugiData/pugixml.h"
-#include "parse.h"
+#include "openbps/parse.h"
 #include <string>
 
 namespace openbps {

@@ -1,10 +1,10 @@
-#include "executer.h"
+#include "openbps/executer.h"
 #include <cmath>
-#include "chain.h"
-#include "parse.h"
-#include "configure.h"
-#include "functionals.h"
-#include "reactions.h"
+#include "openbps/chain.h"
+#include "openbps/parse.h"
+#include "openbps/configure.h"
+#include "openbps/functionals.h"
+#include "openbps/reactions.h"
 #include <iostream>
 #include <fstream>
 #include <complex>
