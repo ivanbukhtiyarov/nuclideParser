@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<configure>
+  <chain>./Xmls/dchain_u235_l1.xml</chain>
+  <reaction>/home/yuri/bptest/reactions.xml</reaction>
+  <numbers>10</numbers>
+  <timestep>1.0</timestep>
+  <timerecord year="0" month="0" day="1.0" hr="12" min="2" sec="20"/>
+  <method>iteration</method>
+  <inpmaterials>/home/yuri/bptest/materialso.xml</inpmaterials>
+  <outmaterials>/home/yuri/bptest/materialso.xml</outmaterials>
+  <epb>1.e-5</epb>
+  <uncertanties>true</uncertanties>
+  <decay_print>true</decay_print>
+  <cram_order>16</cram_order>
+</configure>
