@@ -5,9 +5,12 @@
 #include <iostream>
 #include <iomanip>
 #include <initializer_list>
+#include "xtensor/xarray.hpp"
+#include "xtensor/xadapt.hpp"
 #include "uncertainty.h"
 #include "nuclide.h"
 #include "chain.h"
+#include "materials.h"
 #include "reactions.h"
 
 namespace openbps {
@@ -15,6 +18,8 @@ template <typename T>
 class BaseMatrix;
 class BaseMatrixIter;
 class DecayMatrix;
+class IterMatrix;
+class CramMatrix;
 //==============================================================================
 // BaseMatrix description and implementation
 //==============================================================================
@@ -107,7 +112,7 @@ public:
     size_t Numcols() {return ncols_;}
     //! Get a rows number
     //!
-    size_t Numrows() {return nrows_;}
+    size_t Numrows() const {return nrows_;}
     //! Indexing operator
     //!
     //! The indexing operator [][]
@@ -247,6 +252,8 @@ protected:
 
 class DecayMatrix : public BaseMatrix<double> {
 public:
+    //--------------------------------------------------------------------------
+    //! Constructors, destructors, factory functions
     explicit DecayMatrix(size_t dim) : BaseMatrix<double>(dim, dim) {}
     //--------------------------------------------------------------------------
     //! Methods
@@ -261,6 +268,100 @@ public:
 
 }; //class DecayMatrix
 
-} //namespace openbps
+//==============================================================================
+// IterativeMatrix description
+//==============================================================================
 
+class IterMatrix : public DecayMatrix {
+public:
+    //--------------------------------------------------------------------------
+    //! Constructors, destructors, factory functions
+    explicit IterMatrix(size_t dim) : DecayMatrix(dim) {}
+    IterMatrix(DecayMatrix& externmatrix) : DecayMatrix(externmatrix.Numrows()) {
+        for (size_t i = 0; i < externmatrix.Numrows(); i++)
+             for (size_t j = 0; j < externmatrix.Numrows(); j++)
+                      this->data_[i][j] = externmatrix[i][j];
+
+    }
+    //--------------------------------------------------------------------------
+    //! Methods
+    //! Form a real decay nuclide matrix
+    //!
+    //!\param[in] chain with decay information and fill the data storage
+    //!\param[in] material with nuclear concentration
+    //!\return result a matrix with all transition for the material
+    xt::xarray<double> matrixreal(Chain& chain,
+                                  const Materials& mat);
+    //! Form a deviation decay nuclide matrix for unceratanties analysis
+    //!
+    //!\param[in] chain with decay information and fill the data storage
+    //!\param[in] material with nuclear concentration
+    //!\return result a matrix with all transition for the material
+    xt::xarray<double> matrixdev(Chain& chain,
+                                 const Materials& mat);
+    //! Form a real decay nuclide vector for all transition from nuclide
+    //!
+    //!\param[in] chain with decay information and fill the data storage
+    //!\param[in] material with nuclear concentration
+    //!\return result a vector with all transition for every nuclide:Real
+    xt::xarray<double> sigp(Chain& chain,
+                            const Materials& mat);
+    //! Form a real decay nuclide vector for all transition from nuclide
+    //!
+    //!\param[in] chain with decay information and fill the data storage
+    //!\param[in] material with nuclear concentration
+    //!\return result a vector with all transition for every nuclide:Dev
+    xt::xarray<double> dsigp(Chain& chain,
+                             const Materials& mat);
+
+}; //class IterMatrix
+
+//==============================================================================
+// ChebyshevMatrix description
+//==============================================================================
+
+class CramMatrix : public DecayMatrix {
+public:
+    //--------------------------------------------------------------------------
+    //! Constructors, destructors, factory functions
+    explicit CramMatrix(size_t dim) : DecayMatrix(dim) {}
+    CramMatrix(DecayMatrix& externmatrix) : DecayMatrix(externmatrix.Numrows()) {
+        for (size_t i = 0; i < externmatrix.Numrows(); i++)
+             for (size_t j = 0; j < externmatrix.Numrows(); j++)
+                      this->data_[i][j] = externmatrix[i][j];
+
+    }
+    //--------------------------------------------------------------------------
+    //! Methods
+    //! Form a real decay nuclide matrix
+    //!
+    //!\param[in] chain with decay information and fill the data storage
+    //!\param[in] material with nuclear concentration
+    //!\return result a matrix with all transition for the material
+    xt::xarray<double> matrixreal(Chain& chain,
+                                  const Materials& mat);
+}; //class ChebyshevMatrix
+
+//==============================================================================
+// Non class methods
+//==============================================================================
+
+//! Get a concentration vector according to chain nuclide list
+//!
+//!\param[in] chainer chain instance
+//!\param[in] nameconc nuclide names in current material
+//!\param[in] ro vector with materials nuclide concentration
+//!\param[in] isDev (by default false) wheter returns value contains Real or Dev
+//!\return result nuclide concentration vector
+xt::xarray<double> make_concentration(Chain& chainer, 
+                                      const std::vector<std::string>& nameconc,
+                                      const std::vector<udouble>& ro,
+                                      bool isDev = false);
+
+//! Find out power normalization coefficient to reaction-rate
+//!
+//!\param[in] mat Material to perform normalization
+void material_normalization(Materials& mat);
+
+} // namespace openbps
 #endif // MATRIX_H

@@ -31,10 +31,14 @@
     <decay type="alpha" target="U235" branching_ratio="0.999999"/>
     <reaction type="fission" Q="193410000."/>
     <neutron_fission_yields>
-      <energies>2.53000e-02</energies>
+      <energies>2.53000e-02 14000000.0</energies>
       <fission_yields energy="2.53000e-02">
         <products>Gd157 Gd156 I135 Xe135 Xe136 Cs135</products>
         <data>6.142710e-5 1.483250e-04 0.0292737 0.002566345 0.0219242 4.9097e-6</data>
+      </fission_yields>
+      <fission_yields energy="14000000.0">
+        <products>Gd157 Gd156 I135 Xe135 Xe136 Cs135</products>
+        <data>0.01 0.01 0.01 0.01 0.01 0.01</data>
       </fission_yields>
     </neutron_fission_yields>
   </nuclide>

@@ -1,10 +1,10 @@
-#include "filter.h"
+#include "openbps/filter.h"
 #include <sstream>
 #include <iostream>
 #include <memory>
 #include <algorithm>
-#include "pugixml.h"
-#include "parse.h"
+#include "../extern/pugiData/pugixml.h"
+#include "openbps/parse.h"
 
 
 namespace openbps {

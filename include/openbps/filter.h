@@ -1,6 +1,6 @@
 #ifndef FILTER_H
 #define FILTER_H
-#include "pugixml.h"
+#include "../extern/pugiData/pugixml.h"
 #include "parse.h"
 #include <memory>
 #include <iostream>

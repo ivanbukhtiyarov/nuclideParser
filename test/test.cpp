@@ -1,4 +1,4 @@
-#include "openbps/nuclide_class.h"
+//#include "openbps/nuclide_class.h"
 #include "openbps/configure.h"
 #include "gtest/gtest.h"
 #include "openbps/reactions.h"
@@ -12,7 +12,7 @@
 
 
 using namespace std::complex_literals;
-
+/*
 // Tests that the Foo::Bar() method does Abc.
 TEST(ChainTest, test1) {
   using namespace openbps;
@@ -59,7 +59,7 @@ TEST(ConfigureTest, test4) {
   EXPECT_EQ(some, 1);
   
 }
-
+*/
 TEST(xtensor, test5)
     {
         using namespace xt;

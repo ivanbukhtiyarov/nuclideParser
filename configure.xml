@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <configure>
-  <chain>./Xmls/dchain_u235_l1.xml</chain>
+  <chain>./Xmls/chain_endfb71.xml</chain>
   <reaction>./Xmls/reactions.xml</reaction>
-  <numbers>1</numbers>
+  <nuclides>./Xmls/nuclides.xml</nuclides>
+  <numbers>10</numbers>
   <timestep>1.0</timestep>
-  <method>iteration</method>
-  <inpmaterials>./Xmls/materials_test.xml</inpmaterials>
-  <outmaterials>./Xmls/materials_res.xml</outmaterials>
-  <epb>1.e-5</epb>
+  <timerecord year="0" month="0" day="0.0" hour="0" minute="0" second="1"/>
+  <method>chebyshev</method>
+  <inpmaterials>./Xmls/materials.xml</inpmaterials>
+  <outmaterials>./Xmls/materialso.xml</outmaterials>
+  <epb>1.e-3</epb>
   <uncertanties>true</uncertanties>
   <decay_print>true</decay_print>
-  <cram_order>16</cram_order>
+  <cram_order>48</cram_order>
 </configure>

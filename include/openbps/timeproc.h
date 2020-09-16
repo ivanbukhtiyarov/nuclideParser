@@ -1,6 +1,6 @@
 #ifndef TIMEPROC_H
 #define TIMEPROC_H
-#include "pugixml.h"
+#include "../extern/pugiData/pugixml.h"
 #include "parse.h"
 #include <chrono>
 #include <string>

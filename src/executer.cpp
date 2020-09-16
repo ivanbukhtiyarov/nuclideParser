@@ -1,34 +1,44 @@
 #include "openbps/executer.h"
+#include <vector>
 #include <cmath>
-#include "openbps/chain.h"
-#include "openbps/parse.h"
-#include "openbps/configure.h"
-#include "openbps/functionals.h"
-#include "openbps/reactions.h"
 #include <iostream>
 #include <fstream>
 #include <complex>
-#include "../extern/xtensor/include/xtensor/xarray.hpp"
-#include "../extern/xtensor/include/xtensor/xadapt.hpp"
-#include "../extern/xtensor/include/xtensor/xmath.hpp"
-#include "../extern/xtensor/include/xtensor/xview.hpp"
-#include "../extern/xtensor/include/xtensor/xbuilder.hpp"
-#include "../extern/xtensor/include/xtensor/xcomplex.hpp"
+#include "xtensor/xarray.hpp"
+#include "xtensor/xadapt.hpp"
+#include "xtensor/xmath.hpp"
+#include "xtensor/xview.hpp"
+#include "xtensor/xbuilder.hpp"
+#include "xtensor/xcomplex.hpp"
 #include <Eigen/Sparse>
 #include <Eigen/SparseLU>
-#include <vector>
+#include "openbps/parse.h"
+#include "openbps/timeproc.h"
+#include "openbps/uncertainty.h"
+#include "openbps/nuclide.h"
+#include "openbps/chain.h"
+#include "openbps/materials.h"
+#include "openbps/configure.h"
+#include "openbps/functionals.h"
+#include "openbps/reactions.h"
+#include "openbps/filter.h"
+#include "openbps/matrix.h"
 
-
+//==============================================================================
+// Type definitions
+//==============================================================================
 typedef Eigen::SparseMatrix<double> SpMat;
 
 using namespace std::complex_literals;
-std::string XML_INP_PATH = "./Xmls/materials.xml";
 
 namespace openbps {
 
 namespace executer {
 
-//cram
+//==============================================================================
+// Global variables
+//==============================================================================
+//! CRAM constants description
 xt::xarray<std::complex<double>> theta16 {
     +3.509103608414918 + 8.436198985884374i,
     +5.948152268951177 + 3.587457362018322i,
@@ -108,555 +118,554 @@ xt::xarray<std::complex<double>> theta48{theta_48r+theta_48i*1.i};
 xt::xarray<std::complex<double>> alpha48 {alpha_48r+alpha_48i*1.i};;
 double alpha480{2.258038182743983e-47};
 double alpha160{2.124853710495224e-16};
-//cram
+//! CRAM constants description
 
+//==============================================================================
+// Non class methods implementation
+//==============================================================================
+
+//! Initialize a calculation process
+void init_solver() {
+    // Read a nuclides information
+    read_nuclide_xml(configure::nuclide_file);
+    // Read a materials
+    read_materials_from_inp(configure::inmaterials_file);
+    if (!configure::decay_extra_out)
+        // If mode is not heat residual
+        read_reactions_xml();
+}
+
+//! Run a calculation process
 void run_solver() {
     std::cout << "We star execution\n";
+    // Read a chain from xml file
+    Chain chain = read_chain_xml(configure::chain_file);
+    // Build bind between materials and compositions
+    matchcompositions();
+    // Form a calculation matrix
+    DecayMatrix dm(chain.name_idx.size());
+    dm.form_matrixreal(chain);
+    DecayMatrix ddm(chain.name_idx.size());
+    ddm.form_matrixdev(chain);
+    xt::xarray<double> dy;
+    for (auto& mat : materials) {
+        xt::xarray<double> y =
+                make_concentration(chain, mat->namenuclides, mat->conc);
+        // Prepare dump to store every step results calculation
+        if (configure::outwrite) {
+            configure::dumpoutput.clear();
+            configure::dumpoutput.resize(configure::numstep);
+            for (int k = 0; k < configure::numstep; k++) {
+                configure::dumpoutput[k].resize(y.size());
+            }
+        }
+        switch (configure::calcmode) {
+        // Analytical method
+        case Mode::baetman:
+            std::cout << "Baetman implementation in progress" << std::endl;
+            break;
+            // Iteration method
+        case Mode::iteration:
+        {
+            IterMatrix im(dm);
+            auto matrix = im.matrixreal(chain, *mat);
+            auto sigp = im.sigp(chain, *mat);
+            // Perform calculation with uncertanties analysis
+            if (configure::uncertantie_mod) {
+                dy = make_concentration(chain, mat->namenuclides,
+                                        mat->conc, true);
+                IterMatrix imim(ddm);
+                auto dmatrix = imim.matrixdev(chain, *mat);
+                auto dsigp = imim.dsigp(chain, *mat);
+                iterative(matrix, sigp, y,
+                          dmatrix, dsigp, dy);
+            } else {
+                iterative(matrix, sigp, y);
+            }
+        }
+            break;
+            // Chebyshev rational approximation method
+        case Mode::chebyshev:
+        {
+            CramMatrix cm(dm);
+            auto matrix = cm.matrixreal(chain, *mat);
+            if (configure::order == 8) {
+                cram(matrix, y, alpha16, theta16,
+                     configure::order, alpha160);
+            } else {
+                cram(matrix, y, alpha48, theta48,
+                     configure::order, alpha480);
+            }
+        }
+            break;
+        }//switch case
+        size_t j {0};
+        for (auto& item : chain.name_idx) {
+            std::cout << item.first << " = " << y[j] << std::endl;
+            if (configure::rewrite) {
+                if (configure::uncertantie_mod) {
+                    mat->add_nuclide(item.first, udouble(y[j], dy[j]));
+                } else {
+                    mat->add_nuclide(item.first, y[j]);
+                }
+            }
+            j++;
+        }
+    }//for materials
+    if (configure::rewrite)
+        form_materials_xml(configure::outmaterials_file);
+    if (configure::outwrite)
+        apply_filters(chain);
 }
 
-void exponental(xt::xarray<double>& matrix, xt::xarray<double>& y) {
+//! Iterative method implementation v.1. without uncertanties
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp,
+               xt::xarray<double>& y){
+    // Time step
     double dt {configure::timestep/configure::numstep};
-    std::vector<std::vector<double>> out;
-    if (configure::outwrite) {
-	configure::dumpoutput.clear();
-	configure::dumpoutput.resize(configure::numstep);
-        for (int k = 0; k < configure::numstep; k++) {
-            configure::dumpoutput[k].resize(y.size());
+    // Array shapes
+    size_t N {y.size()};
+    std::vector<std::size_t> shape = { y.size() };
+    std::vector<std::size_t> dshape = { y.size(), y.size() };
+    // Auxilary arrays declaration
+    xt::xarray<double> ro = xt::zeros<double>(shape);
+    xt::xarray<double> roo = xt::zeros<double>(shape);
+    xt::xarray<double> rrr = xt::zeros<double>(shape);
+    xt::xarray<double> arr = xt::zeros<double>(shape);
+    xt::xarray<double> arrtemp = xt::zeros<double>(dshape);//?!
+    xt::xarray<double> rest = xt::zeros<double>(shape);
+    xt::xarray<double> disr = xt::zeros<double>(shape);
+    xt::xarray<double> et = xt::ones<double>(shape);
+    xt::xarray<double> er = xt::ones<double>(shape);
+    double aa {0.0};
+    // Implementation
+    arr = sigp * dt;
+    // Rest part of radioactive nuclide through decay for time dt
+    rest = xt::exp(-arr);
+    // Disapperead part of radioactive nuclide through decay for time dt
+    disr = 1 - rest;
+    // Fill auxilary arrays
+    for (size_t i = 0; i < N; i++) {
+        if (disr(i) < 1.e-10) disr(i) = arr(i);
+        if (arr(i) > 0.0) er(i) = disr(i) / arr(i);
+        for (size_t j = 0; j < N; j++) {
+            if (sigp(j) > 0) matrix(i, j) = matrix(i, j) / sigp(j);
         }
     }
-    xt::xarray<double> matrix2, ro;
-    ro = y * 0.0;
-    matrix2 = xt::exp(matrix * dt);
+    et = 1.0 - er;
+    roo = y;
+    // Time iteration
     for (int k = 0; k < configure::numstep; k++) {
-        for (int j = 0; j < y.size(); j++) {
+        bool proceed {true};
+        int t = 0;
+        rrr = y * disr;       //!< disappear at time dt
+        y = y * rest;         //!< rest at time dt
+        ro = y;
+        // Main loop
+        while (proceed) {
+            t++;
+            // Transition of nuclear concentration part from parent
+            // to child nuclear
+            for (size_t iparent=0; iparent < N; iparent++) {
+                for (size_t ichild=0; ichild < N; ichild++) {
+                    arrtemp(ichild, iparent) = matrix(ichild, iparent) *
+                            rrr(iparent);
+                }
+            }
+            // Additive nucleus through decay
+            for (size_t ichild=0; ichild < N; ichild++) {
+                aa = xt::sum(xt::row(arrtemp, ichild))(0);
+                ro(ichild) += aa;
+            }
+            // Get additives to child nucleus in decay assumption
+            arr = ro - y;
+            rrr = arr * et;
+            y += arr * er;
+            ro = y;
+            // Check convergence criteria
+            for (int iparent=0; iparent < N; iparent++) {
+                if (roo(iparent) > 0.0) {
+                    if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
+                        proceed=true;
+                        break;
+                    } else {
+                        proceed=false;
+                    }
+                }
+            }
+            // If number of iteration exceeds maximum constant stop process
+            if (t > MAXITERATION) {
 
-             for (int i = 0; i < y.size(); i++) {
-                  if (i==j) {
-                      ro(j) += y(i) * matrix2(j, i);
-                  } else {
-                      ro(j) += y(i) *  (matrix2(j, i) - 1);
-                  }
-             }
-             if ((std::isnan(ro(j))) || ( std::isinf(ro(j)))) ro(j) = 0.0;
-
-        }
-        y = ro;
-        ro = ro * 0.0;
+                std::cout << "Exceed :number of iteration " << std::endl;
+                proceed=false;
+            }
+            roo = y;
+        } // Iteration loop
+        // Fill the output dump
         if (configure::outwrite) {
             for (int i = 0; i < y.size(); i++) {
-        	configure::dumpoutput[k][i] = y(i);
+                configure::dumpoutput[k][i][0] = y(i);
             }
         }
-
-    }
+    }//numstep
 }
 
-void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y){
-           double dt {configure::timestep/configure::numstep};
-	   std::vector<std::size_t> shape = { y.size() };
-	   std::vector<std::size_t> dshape = { y.size(), y.size() };
-           //xt::xarray<double> sigp = xt::zeros<double>(shape);
-           xt::xarray<double> ro = xt::zeros<double>(shape);
-           xt::xarray<double> roo = xt::zeros<double>(shape);
-           xt::xarray<double> rrr = xt::zeros<double>(shape);
-           xt::xarray<double> arr = xt::zeros<double>(shape);
-           xt::xarray<double> arrtemp = xt::zeros<double>(dshape);//?!
-           xt::xarray<double> disr = xt::zeros<double>(shape);
-           xt::xarray<double> rest = xt::zeros<double>(shape);
-           xt::xarray<double> et = xt::ones<double>(shape);
-           xt::xarray<double> er = xt::ones<double>(shape);
-           size_t N {y.size()};
-           double aa {0.0};
-           if (configure::outwrite) {
-               configure::dumpoutput.clear();
-               configure::dumpoutput.resize(configure::numstep);
-               for (int k = 0; k < configure::numstep; k++) {
-        	   configure::dumpoutput[k].resize(y.size());
-               }
-           }
-           for (size_t i=0; i < N; i++) {
-               matrix(i, i) = 0.0;
-	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
-           }
-           arr = sigp * dt;
-           disr = xt::exp(-arr);
-           rest = 1 - disr;
-           for (size_t i=0; i < N; i++) {
-               if (rest(i) < 1.e-10) rest(i) = arr(i);
-               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
-               for (size_t j=0; j < N; j++) {
-               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
-
-               }
-           }
-           et = 1.0 - er;
-           roo = y;
-           for (int k = 0; k < configure::numstep; k++) {
-               bool proceed {true};
-               int t = 0;
-               rrr = y * rest;       //!< rest
-               y = y * disr;         //!< disappearance
-               ro = y;
-               while (proceed) {
-	            t++;
-                    for (size_t iparent=0; iparent < N; iparent++) {
-	                     for (size_t ichild=0; ichild < N; ichild++) {
-	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
-                        }
-                     }
-                     for (size_t ichild=0; ichild < N; ichild++) {
-                         aa = xt::sum(xt::row(arrtemp, ichild))(0);
-                         ro(ichild) += aa;
-                     }
-                     arr = ro - y;
-                     rrr = arr * et;
-                     y += arr * er;
-                     ro = y;
-
-                     for (int iparent=0; iparent < N; iparent++) {
-                         if (roo(iparent) > 0.0) {
-                             if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
-                                  proceed=true;
-                                  break;
-                             } else {
-                        	 proceed=false;
-                             }
-                        }
-                     }
-                     if (t > 25) {
-
-                         std::cout << "Exceed :number of iteration " << std::endl;
-                         proceed=false;
-                     }
-                     roo = y;
-               }
-               if (configure::outwrite) {
-                   for (int i = 0; i < y.size(); i++) {
-                       configure::dumpoutput[k][i] = y(i);
-                   }
-              }
-           }//numstep
-}
-//
-void diterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
-                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy) {
-           double dt {configure::timestep/configure::numstep};
-	   std::vector<std::size_t> shape = { y.size() };
-	   std::vector<std::size_t> dshape = { y.size(), y.size() };
-           //xt::xarray<double> sigp = xt::zeros<double>(shape);
-           xt::xarray<double> ro = xt::zeros<double>(shape);
-           xt::xarray<double> dro = xt::zeros<double>(shape);
-           xt::xarray<double> roo = xt::zeros<double>(shape);
-           xt::xarray<double> rrr = xt::zeros<double>(shape);
-           xt::xarray<double> drr = xt::zeros<double>(shape);
-           xt::xarray<double> arr = xt::zeros<double>(shape);
-           xt::xarray<double> arrtemp = xt::zeros<double>(dshape);
-           xt::xarray<double> drrtemp = xt::zeros<double>(dshape);
-           xt::xarray<double> disr = xt::zeros<double>(shape);
-           xt::xarray<double> rest = xt::zeros<double>(shape);
-           xt::xarray<double> et = xt::ones<double>(shape);
-           xt::xarray<double> er = xt::ones<double>(shape);
-           xt::xarray<double> ds = xt::ones<double>(shape);
-           xt::xarray<double> dr = xt::ones<double>(shape);
-           size_t N {y.size()};
-           double aa {0.0};
-           if (configure::outwrite) {
-               configure::dumpoutput.clear();
-               configure::dumpoutput.resize(configure::numstep);
-               for (int k = 0; k < configure::numstep; k++) {
-        	   configure::dumpoutput[k].resize(y.size());
-               }
-           }
-           for (size_t i=0; i < N; i++) {
-               matrix(i, i) = 0.0;
-               dmatrix(i, i) = 0.0;
-	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
-           }
-           arr = sigp * dt;
-           disr = xt::exp(-arr);
-           rest = 1 - disr;
-           for (size_t i=0; i < N; i++) {
-               if (rest(i) < 1.e-10) rest(i) = arr(i);
-               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
-               for (size_t j=0; j < N; j++) {
-               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
-                    if (sigp(j) > 0) dmatrix(i,j) = dmatrix(i,j) / sigp(j);
-
-               }
-           }
-           et = 1.0 - er;
-           roo = y;
-           for (int k = 0; k < configure::numstep; k++) {
-               bool proceed {true};
-               int t = 0;
-               rrr = y * rest;       //!< rest
-               drr = dy * rest;
-               dro = disr * dy  + dsigp * dt;
-               /*
-               for (size_t iparent=0; iparent < N; iparent++) {
-                   std :: cout << "DRO: " << dro(iparent) << std::endl;
-                   std :: cout << "DY: " << dy(iparent) << std::endl;
-                   std :: cout << "DSIGP: " << dsigp(iparent) << std::endl;
-               }
-               */
-               dy = dro;
-               y = y * disr;         //!< disappearance
-               ro = y;
-               while (proceed) {
-	            t++;
-                    for (size_t iparent=0; iparent < N; iparent++) {
-	                     for (size_t ichild=0; ichild < N; ichild++) {
-	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
-                                 drrtemp(ichild, iparent) = matrix(ichild, iparent) * drr(iparent) +  
-                                                            dmatrix(ichild, iparent) * rrr(iparent);
-                        }
-                     }
-                     for (size_t ichild=0; ichild < N; ichild++) {
-                         aa = xt::sum(xt::row(arrtemp, ichild))(0);
-                         ro(ichild) += aa;
-                         dro(ichild) += xt::sum(xt::row(drrtemp, ichild))(0);
-                     }
-                     arr = ro - y;
-                     ds = dro - dy;
-                     rrr = arr * et;
-                     drr = ds * et;
-                     y += arr * er;
-                     dy += ds * er;
-                     ro = y;
-                     dro = dy;
-                     for (int iparent=0; iparent < N; iparent++) {
-                         if (roo(iparent) > 0.0) {
-                             if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
-                                  proceed=true;
-                                  break;
-                             } else {
-                        	 proceed=false;
-                             }
-                        }
-                     }
-                     if (t > 25) {
-
-                         std::cout << "Exceed :number of iteration " << std::endl;
-                         proceed=false;
-                     }
-                     roo = y;
-               }
-               if (configure::outwrite) {
-                   for (int i = 0; i < y.size(); i++) {
-                       configure::dumpoutput[k][i] = y(i);
-                   }
-              }
-           }//numstep
-}
-
-//
-void diterative2(xt::xarray<double>& matrix, xt::xarray<double>& sigp, xt::xarray<double>& y,
-                xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp, xt::xarray<double>& dy) {
-           double dt {configure::timestep/configure::numstep};
-	   std::vector<std::size_t> shape = { y.size() };
-	   std::vector<std::size_t> dshape = { y.size(), y.size() };
-           //xt::xarray<double> sigp = xt::zeros<double>(shape);
-           xt::xarray<double> ro = xt::zeros<double>(shape);
-           xt::xarray<double> dro = xt::zeros<double>(shape);
-           xt::xarray<double> roo = xt::zeros<double>(shape);
-           xt::xarray<double> rrr = xt::zeros<double>(shape);
-           xt::xarray<double> drr = xt::zeros<double>(shape);
-           xt::xarray<double> arr = xt::zeros<double>(shape);
-           xt::xarray<double> arrtemp = xt::zeros<double>(dshape);
-           xt::xarray<double> drrtemp = xt::zeros<double>(dshape);
-           xt::xarray<double> disr = xt::zeros<double>(shape);
-           xt::xarray<double> rest = xt::zeros<double>(shape);
-           xt::xarray<double> et = xt::ones<double>(shape);
-           xt::xarray<double> er = xt::ones<double>(shape);
-           xt::xarray<double> es = xt::ones<double>(shape);
-           xt::xarray<double> ds = xt::ones<double>(shape);
-           xt::xarray<double> dr = xt::ones<double>(shape);
-           xt::xarray<double> ddr = xt::ones<double>(shape);
-           size_t N {y.size()};
-           double aa {0.0};
-           double dd {0.0};
-           if (configure::outwrite) {
-               configure::dumpoutput.clear();
-               configure::dumpoutput.resize(configure::numstep);
-               for (int k = 0; k < configure::numstep; k++) {
-        	   configure::dumpoutput[k].resize(y.size());
-               }
-           }
-           for (size_t i=0; i < N; i++) {
-               matrix(i, i) = 0.0;
-               dmatrix(i, i) = 0.0;
-	       //sigp(i) = xt::sum(xt::col(matrix, i))(0);
-           }
-           arr = sigp * dt;
-           disr = xt::exp(-arr);
-           rest = 1 - disr;
-           for (size_t i=0; i < N; i++) {
-               if (rest(i) < 1.e-10) rest(i) = arr(i);
-               if (arr(i) > 0.0) er(i) = rest(i) / arr(i);
-               for (size_t j=0; j < N; j++) {
-               	    if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
-                    if (sigp(j) > 0) dmatrix(i,j) = dmatrix(i,j) / sigp(j);
-
-               }
-           }
-           et = 1.0 - er;
-           es = (er + disr) * dsigp;
-           
-           roo = y;
-           for (int k = 0; k < configure::numstep; k++) {
-               bool proceed {true};
-               int t = 0;
-               rrr = y * rest;       //!< rest
-               drr = dy * rest;
-               ddr = (sigp * dt * dsigp + rest * dy);
-               dr = y * disr * ddr;
-               dy = dy + sigp * dt * dsigp;
-               ds = y * disr * dy;
-               /*
-               for (size_t iparent=0; iparent < N; iparent++) {
-                   std :: cout << "DRO: " << dro(iparent) << std::endl;
-                   std :: cout << "DY: " << dy(iparent) << std::endl;
-                   std :: cout << "DSIGP: " << dsigp(iparent) << std::endl;
-               }
-               */
-               dro = dy;
-               y = y * disr;         //!< disappearance
-               ro = y;
-               while (proceed) {
-	            t++;
-                    for (size_t iparent=0; iparent < N; iparent++) {
-	                     for (size_t ichild=0; ichild < N; ichild++) {
-	                         arrtemp(ichild, iparent) = matrix(ichild, iparent) * rrr(iparent);
-                                 if (t == 0) {
-                                     drrtemp(ichild, iparent) = dmatrix(ichild, iparent) + dy(iparent);
-                                 } else {
-                                     drrtemp(ichild, iparent) = dmatrix(ichild, iparent) + dr(iparent);
-                                     
-                                 }
-                                 drrtemp(ichild, iparent) = arrtemp(ichild, iparent) * drrtemp(ichild, iparent);
-                        }
-                     }
-                     for (size_t ichild=0; ichild < N; ichild++) {
-                         aa = xt::sum(xt::row(arrtemp, ichild))(0);
-                         dd = xt::sum(xt::row(drrtemp, ichild))(0);
-                         ro(ichild) += aa;
-                         dr(ichild) = aa * es(ichild);
-                         ds(ichild) += dd * er(ichild) + dr(ichild);
-                         dr(ichild) += dd * et(ichild); 
-                     }
-                     arr = ro - y;
-                     
-                     rrr = arr * et;
-                     
-                     y += arr * er;
-                     
-                     
-                     for (int iparent=0; iparent < N; iparent++) {
-                         if (y(iparent) < 0.0) y(iparent) = 0.0;
-                         if (arr(iparent) > 0.0) dr(iparent) = dr(iparent) / arr(iparent);
-                         if (dr(iparent) < 0.0) dr(iparent) = 0.0;
-                         if (y(iparent) > 0.0) dy(iparent) = ds(iparent) ;// y(iparent);
-                         //if (y(iparent) > 0.0) dy(iparent) = ds(iparent) / y(iparent);
-                     }
-                     ro = y;
-                     for (int iparent=0; iparent < N; iparent++) {
-                         if (roo(iparent) > 0.0) {
-                             if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
-                                  proceed=true;
-                                  break;
-                             } else {
-                        	 proceed=false;
-                             }
-                        }
-                     }
-                     if (t > 25) {
-
-                         std::cout << "Exceed :number of iteration " << std::endl;
-                         proceed=false;
-                     }
-                     roo = y;
-               }
-               if (configure::outwrite) {
-                   for (int i = 0; i < y.size(); i++) {
-                       configure::dumpoutput[k][i] = y(i);
-                   }
-              }
-           }//numstep
-}
-
-void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
-                                      xt::xarray<std::complex<double>>& alpha,
-                                      xt::xarray<std::complex<double>>& theta,
-                                      int order, double alpha0) {
-
+//! Iterative method implementation v.2.
+void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp,
+               xt::xarray<double>& y,
+               xt::xarray<double>& dmatrix, xt::xarray<double>& dsigp,
+               xt::xarray<double>& dy) {
+    // Time step
     double dt {configure::timestep/configure::numstep};
-    size_t n {y.size()};
-    if (configure::outwrite) {
-	configure::dumpoutput.clear();
-	configure::dumpoutput.resize(configure::numstep);
-        for (int k = 0; k < configure::numstep; k++) {
-            configure::dumpoutput[k].resize(y.size());
+    // Array shapes
+    std::vector<std::size_t> shape = {y.size()};
+    std::vector<std::size_t> dshape = {y.size(), y.size()};
+    size_t N {y.size()};
+    // Auxilary arrays declaration
+    xt::xarray<double> ro = xt::zeros<double>(shape);
+    xt::xarray<double> dro = xt::zeros<double>(shape);
+    xt::xarray<double> roo = xt::zeros<double>(shape);
+    xt::xarray<double> rrr = xt::zeros<double>(shape);
+    xt::xarray<double> drr = xt::zeros<double>(shape);
+    xt::xarray<double> arr = xt::zeros<double>(shape);
+    xt::xarray<double> arrtemp = xt::zeros<double>(dshape);
+    xt::xarray<double> drrtemp = xt::zeros<double>(dshape);
+    xt::xarray<double> rest = xt::zeros<double>(shape);
+    xt::xarray<double> disr = xt::zeros<double>(shape);
+    xt::xarray<double> et = xt::ones<double>(shape);
+    xt::xarray<double> er = xt::ones<double>(shape);
+    xt::xarray<double> es = xt::ones<double>(shape);
+    xt::xarray<double> ds = xt::ones<double>(shape);
+    xt::xarray<double> dr = xt::ones<double>(shape);
+    xt::xarray<double> ddr = xt::ones<double>(shape);
+    double aa {0.0};
+    double dd {0.0};
+    // Implementation
+    arr = sigp * dt;
+    // Rest part of radioactive nuclide through decay for time dt
+    rest = xt::exp(-arr);
+    // Disapperead part of radioactive nuclide through decay for time dt
+    disr = 1 - rest;
+    // Fill auxilary arrays
+    for (size_t i=0; i < N; i++) {
+        if (disr(i) < 1.e-10) disr(i) = arr(i);
+        if (arr(i) > 0.0) er(i) = disr(i) / arr(i);
+        for (size_t j=0; j < N; j++) {
+            if (sigp(j) > 0) matrix(i,j) = matrix(i,j) / sigp(j);
+            if (sigp(j) > 0) dmatrix(i,j) = dmatrix(i,j) / sigp(j);
+
         }
     }
+    // Uncertanty estimation
+    et = 1.0 - er;
+    es = (er + rest) * dsigp;
+    roo = y;
+    // Time iteration
+    for (int k = 0; k < configure::numstep; k++) {
+        bool proceed {true};
+        int t = 0;
+        rrr = y * disr;       //!< disappear at time dt
+        // Uncertainties arrays initialization
+        drr = dy * disr;
+        ddr = (sigp * dt * dsigp + disr * dy);
+        dr = y * rest * ddr;
+        dy = dy + sigp * dt * dsigp;
+        ds = y * rest * dy;
+        dro = dy;
+        y = y * rest;         //!< rest at time dt
+        ro = y;
+        // Main loop
+        while (proceed) {
+            t++;
+            // Transition of nuclear concentration part from parent
+            // to child nuclear
+            for (size_t iparent=0; iparent < N; iparent++) {
+                for (size_t ichild=0; ichild < N; ichild++) {
+                    arrtemp(ichild, iparent) = matrix(ichild, iparent) *
+                            rrr(iparent);
+                    if (t == 0) {
+                        drrtemp(ichild, iparent) = dmatrix(ichild, iparent) +
+                                dy(iparent);
+                    } else {
+                        drrtemp(ichild, iparent) = dmatrix(ichild, iparent) +
+                                dr(iparent);
+
+                    }
+                    drrtemp(ichild, iparent) = arrtemp(ichild, iparent) *
+                            drrtemp(ichild, iparent);
+                }
+            }
+            // Additive nucleus through decay
+            for (size_t ichild=0; ichild < N; ichild++) {
+                aa = xt::sum(xt::row(arrtemp, ichild))(0);
+                dd = xt::sum(xt::row(drrtemp, ichild))(0);
+                ro(ichild) += aa;
+                dr(ichild) = aa * es(ichild);
+                ds(ichild) += dd * er(ichild) + dr(ichild);
+                dr(ichild) += dd * et(ichild);
+            }
+            // Get additives to child nucleus in decay assumption
+            arr = ro - y;
+
+            rrr = arr * et;
+
+            y += arr * er;
+            for (int iparent=0; iparent < N; iparent++) {
+                if (y(iparent) < 0.0) y(iparent) = 0.0;
+                if (arr(iparent) > 0.0) dr(iparent) = dr(iparent) /
+                        arr(iparent);
+                if (dr(iparent) < 0.0) dr(iparent) = 0.0;
+                if (y(iparent) > 0.0) dy(iparent) = ds(iparent);
+            }
+            ro = y;
+            // Check convergence criteria
+            for (int iparent=0; iparent < N; iparent++) {
+                if (roo(iparent) > 0.0) {
+                    if ( abs(1.0 - ro(iparent)/roo(iparent)) > configure::epb) {
+                        proceed=true;
+                        break;
+                    } else {
+                        proceed=false;
+                    }
+                }
+            }
+            // If number of iteration exceeds maximum constant stop process
+            if (t > MAXITERATION) {
+
+                std::cout << "Exceed :number of iteration " << std::endl;
+                proceed=false;
+            }
+            roo = y;
+        }// Iteration loop
+        // Fill the output dump
+        if (configure::outwrite) {
+            for (int i = 0; i < y.size(); i++) {
+                configure::dumpoutput[k][i][0] = y(i);
+            }
+        }
+    }//numstep
+}
+
+//! Chebyshev rational appproximation method (CRAM)
+void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
+          xt::xarray<std::complex<double>>& alpha,
+          xt::xarray<std::complex<double>>& theta,
+          int order, double alpha0) {
+    // Time step
+    double dt {configure::timestep/configure::numstep};
+    // Problem dimensions
+    size_t n {y.size()};
     std::vector<std::size_t> shape = {y.size()};
-    xt::xarray<std::complex<double>> zy(shape);
-    xt::xarray<double> ident = xt::eye(y.size());
     matrix = matrix * dt;
     Eigen::VectorXd ytemp(n);
-    Eigen::VectorXcd x(n), b(n), zytemp(n);
+    Eigen::VectorXcd x(n), zytemp(n);
     Eigen::SparseMatrix<std::complex<double>> A(n,n);
-    std::complex<double> c(1,0);
+    std::complex<double> c(1, 0);
+    // Reserve space in sparse matrix
     A.reserve(n * 10);
-    Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>, Eigen::COLAMDOrdering<int> >   solver;
-    // fill A and b;
+    // Solver initialization
+    Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>,
+            Eigen::COLAMDOrdering<int>>  solver;
+    // Fill A and b;
     for (size_t i=0; i < n; i++) {
-         ytemp(i) = y(i);
-         zytemp(i) = c * y(i);
-         for (size_t j=0; j < n; j++) {
-             if (matrix(i, j) != 0.) A.insert(i, j) = c * matrix(i, j);
-         }
+        ytemp(i) = y(i);
+        zytemp(i) = c * y(i);
+        for (size_t j = 0; j < n; j++)
+            if (matrix(i, j) != 0.) A.insert(i, j) = c * matrix(i, j);
     }
+    // Prepare matrix
     A.makeCompressed();
-
+    // Time iteration
     for (int t=0; t < configure::numstep; t++) {
-
-        for (int it=0; it < order; it++) {
-            std :: cout << "Number of iterantions is "<<it<< std::endl;
+        // CRAM order iteration
+        for (int it = 0; it < order; it++) {
+            std :: cout << "Number of iterantions is "<< it << std::endl;
             for (size_t j=0; j < n; j++) {
-                 A.coeffRef(j,j) = c * matrix(j, j) - theta(it);
+                A.coeffRef(j,j) = c * matrix(j, j) - theta(it);
             }
-            // Compute the ordering permutation vector from the structural pattern of A
+            // Compute the ordering permutation vector from the structural
+            // pattern of A
             solver.analyzePattern(A);
-            // Compute the numerical factorization
+            // Compute the numerical facmatrixtorization
             solver.factorize(A);
             //Use the factors to solve the linear system
             zytemp.real() = ytemp;
             x = solver.solve(zytemp);
-
             x = alpha(it) * x;
-	    ytemp += 2 * x.real();
-            //y += 2 * real(alpha(it) * xt::linalg::solve(matrix - theta(it) * ident, zy));
-        }
+            ytemp += 2 * x.real();
+        } // CRAM iteration
 
         ytemp = ytemp * alpha0;
         for (size_t i=0; i < n; i++)
             y(i) = ytemp(i);
+        // Fill the dump
         if (configure::outwrite) {
-            for (int i = 0; i < y.size(); i++) {
-                 configure::dumpoutput[t][i] = y(i);
-            }
+            for (int i = 0; i < y.size(); i++)
+                configure::dumpoutput[t][i][0] = y(i);
         }
-    }
-
+    } // time iteration
 }
 
-void init_solver() {
+//! Apply filters to result
+void apply_filters(const Chain &chainer) {
+    bool isMaterial {false};
+    std::array<double, 4> storeval {0., 0., 0., 0.};
+    std::ofstream output(configure::path_output + "outlog.csv");
+    std::vector<int> xscale;
+    std::vector<int> yscale;
+    std::vector<int> mainheader;
+    std::vector<int> addheader;
+    std::vector<std::string> headnames;
+    std::vector<std::string> nuclnames;
+    xscale.reserve(configure::numstep);
+    yscale.reserve(chainer.name_idx.size());
+    nuclnames.reserve(chainer.name_idx.size());
+    // Applying a time filter to result
+    if (timefilter != nullptr) {
+        timefilter->apply(configure::timestep / configure::numstep,
+                          configure::numstep, xscale);
+    } else {
+        for (int i = 0; i < configure::numstep; i++)
+            xscale.push_back(i);
+    }
+    // Fill headers and nuclide names array
+    std::for_each(chainer.name_idx.begin(),
+                  chainer.name_idx.end(),
+                  [&nuclnames](std::pair<std::string, size_t> item){
+        nuclnames.push_back(item.first);
+    });
+    std::for_each(configure::header_names.begin(),
+                  configure::header_names.end(),
+                  [&headnames](std::string item){
+        headnames.push_back(item);
+    });
+    // Search for ordinary string filters
+    auto searchexnuclfilter = std::find_if(filters.begin(),
+                                           filters.end(),
+                                           [] (Filter& f) {
+            return f.type == "exnuclide";});
+    auto searchnuclfilter = std::find_if(filters.begin(),
+                                         filters.end(),
+                                         [] (Filter& f) {
+            return f.type == "nuclide";});
+    auto searchheaderfilter = std::find_if(filters.begin(),
+                                           filters.end(),
+                                           [] (Filter& f) {
+            return f.type == "header";});
+    // If nuclide filter is present -> apply it
+    if (searchexnuclfilter != filters.end()) {
+        searchexnuclfilter->apply(nuclnames, yscale);
+    }
+    // If header filter is present -> apply it
+    if (searchheaderfilter != filters.end()) {
+        mainheader.push_back(0);
+        searchheaderfilter->apply(headnames, mainheader);
+    } else {
+        for (int i = 0; i < configure::header_names.size(); i++)
+            mainheader.push_back(i);
+    }
+    // Addition to header if nuclide concentration specifier is present
+    if (searchnuclfilter != filters.end()) {
+        searchnuclfilter->apply(nuclnames, addheader);
+    }
+    for (size_t k = 0; k < mainheader.size(); k++) {
+        switch (mainheader[k]) {
+        case 0:
+            output << "dt" << ";";
+            break;
+        case 1:
+            output << "Act, sec-1" << ";";
+            break;
+        case 2:
+            output << "Q, Mev" << ";";
+            break;
+        case 3:
+            if (configure::uncertantie_mod)
+                output << "dAct, sec-1" << ";";
+            break;
+        case 4:
+            if (configure::uncertantie_mod)
+                output << "dQ, Mev" << ";";
+            break;
+        }
+    }
+    for (auto& k : addheader)
+        output << nuclnames[k] << ";";
+    output << std::endl;
+    for (auto& m : materials) {
+        // If materials fitler is present
+        // then applying it
+        if (materialfilter != nullptr) {
+            materialfilter->apply(m->Name(), isMaterial);
+        } else {
+            isMaterial = true;
+        }
+        if (isMaterial) {
+            output << m->Name() << ";" << std::endl;
+            for (auto t : xscale) {
+                output << configure :: timestep / configure :: numstep *
+                          (t + 1) << ";";
+                for (size_t i = 0; i < nuclnames.size(); i++) {
+                    if (std::find(yscale.begin(), yscale.end(), i) ==
+                            yscale.end()) {
+                        size_t ijk {chainer.name_idx.at(
+                                        nuclnames[i])};
+                        udouble uhalflife {nuclides[chainer.name_idx.at(
+                                        nuclnames[i])]->half_life};
+                        for (size_t k = 0; k < mainheader.size(); k++) {
+                            if (mainheader[k] == 1 &&
+                                    uhalflife.Real() > 0)//Decay-rate
+                                storeval[0] +=
+                                        log(2.0) /
+                                        uhalflife.Real()
+                                        * configure::dumpoutput[t][i][0] *
+                                        1.e+24;
+                            if (mainheader[k] == 2 &&
+                                    uhalflife.Real() > 0) //Decay heat
+                                storeval[1] +=
+                                        log(2.0) /
+                                        uhalflife.Real() *
+                                        nuclides[ijk]->decay_energy
+                                        * configure::dumpoutput[t][i][0] *
+                                        1.e+24 * 1.e-6;
+                            if (mainheader[k] == 3 &&
+                                    uhalflife.Real() > 0) //d(Decay-rate)
+                                storeval[2] +=
+                                        (log(2.0) /
+                                         uhalflife).Dev() *
+                                        configure::dumpoutput[t][i][0] *
+                                        1.e+24 +
+                                        log(2.0) /
+                                        uhalflife.Real()
+                                        * configure::dumpoutput[t][i][1] *
+                                        1.e+24;
+                            if (mainheader[k] == 4 &&
+                                    uhalflife.Real() > 0) //d(Decay heat)
+                                storeval[3] +=
+                                        ((log(2.0) /
+                                          uhalflife
+                                          ).Dev() *
+                                         configure::dumpoutput[t][i][0] +
+                                        log(2.0) /
+                                        uhalflife.Real()
+                                        * configure::dumpoutput[t][i][1]) *
+                                        nuclides[ijk]->decay_energy *
+                                        1.e+24 * 1.e-6;
+                        } // for with if
+                    }
+                } // for nuclides
+                for (size_t k = 1; k < mainheader.size(); k++) {
+                    output << storeval[mainheader[k] - 1] << ";";
+                    storeval[mainheader[k] - 1] = 0.0;
+                }
+                for (auto& k : addheader)
+                    output << configure::dumpoutput[t][k][0] << ";";
+                output << std::endl;
+            } // for time
+        } // if
 
-	pugi::xml_node chain_node{read_chain_xml(configure::chain_file)};
-
-	Chain chain(chain_node);
-	    read_reactions_xml();
-            //forming from reactions INP
-            std::vector<Materials> v = read_materials_from_inp(configure::inmaterials_file);
-            matchcompositions(compositions, v);
-            
-	    for (auto& mat : v) {
-	         if (mat.name != "all") {
-		     xt::xarray<double> mainarr, dmainarr;
-		     std::vector<std::size_t> shape = { chain.nuclides.size() };
-		     xt::xarray<double> y = make_concentration(chain, mat.namenuclides, mat.conc);
-                     if (configure::uncertantie_mod) std :: cout << "UNCERTATNTIES MOD!!!!!" << std :: endl;
-                     xt::xarray<double> dy = make_concentration(chain, mat.namenuclides, mat.d_conc);
-                     if (configure::uncertantie_mod) std :: cout << "UNCERTATNTIES MOD!!!!!" << std :: endl;
-		     xt::xarray<double> y_old = xt::zeros<double>(shape);
-                     xt::xarray<double> dy_old = xt::zeros<double>(shape);
-		     y_old = y;
-                     dy_old = dy;
-	             mainarr = form_matrix(chain, mat);
-                     switch (configure::calcmode) {
-                       case configure::Mode::exponent:
-                	 exponental(mainarr, y);
-		         break;
-                       case configure::Mode::iteration:
-                         {
-                          if (configure::uncertantie_mod) std :: cout << "1. out: out uncertanties mode" << std :: endl;
-                          xt::xarray<double> sigp {form_sigp(chain, mat)} ;
-                          if (configure::uncertantie_mod) {
-                              xt::xarray<double> dsigp {form_dsigp(chain, mat)};
-                              dmainarr = form_dmatrix(chain, mat);
-                              if (configure::uncertantie_mod) std :: cout << "2. out: out uncertanties mode" << std :: endl;
-                              diterative2(mainarr, sigp, y,
-                                        dmainarr, dsigp, dy);
-                          } else {
-                	      iterative(mainarr, sigp, y);
-                          }
-                         }
-		         break;
-                       case configure::Mode::chebyshev:
-                         if (configure::order == 8) {
-                	     cram(mainarr, y, alpha16, theta16, configure::order, alpha160);
-                         } else {
-                             cram(mainarr, y, alpha48, theta48, configure::order, alpha480);
-                         }
-                	 break;
-                     }
-		     
-	             for (size_t j = 0; j < y.size(); j++) {
-			 if (y[j] > 0 && dy[j]/y[j] > 1.0) std::cout << chain.nuclides[j].name << " = " << y[j] <<" with error = " <<dy[j]<< std::endl;
-			 if (configure::rewrite) mat.add_nuclide(chain.nuclides[j].name, y[j]);
-			 if (configure::rewrite && configure::uncertantie_mod) mat.add_nuclide(chain.nuclides[j].name, dy[j], true);
-		     }
-                     std::cout << "RESULT OF CALCULATION IS: " <<  dy.size() << std::endl;
-                     std::cout << "RESULT OF CALCULATION IS: " <<  y.size() << std::endl;
-	             if (configure::outwrite) {
-                                std::cout << "CHECK IN: " <<  y.size() << std::endl;
-	             		std::ofstream myfile("outlog.csv", std::ofstream::app);
-	             		if (myfile.is_open()) {
-	             		    myfile << mat.name;
-	             		    myfile << "\n";
-                                    myfile << "Number" << ";" << "Act"<<";"<< "Q, Mev"<<"\n";
-	             		    for (size_t t = 0; t < configure::numstep; t++) {
-                                         double actval {0.0};
-	             		         double qval {0.0};
-                                         double acterr {0.0};
-	             		         double qerr {0.0};
-	             		         for (size_t j = 0; j < y.size(); j++) {
-                                             //std :: cout << "FIND RES "<<chain.nuclides[j].name.rfind("U")<<std::endl;
-	             		              if ((chain.nuclides[j].half_life > 0)) {
-	             		        	  actval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] * 1.e+24;
-	             		        	  qval += log(2.0) / chain.nuclides[j].half_life * configure::dumpoutput[t][j] *
-                                                                                                   chain.nuclides[j].decay_energy * 1.e+24 *
-                                                                                                   1.e-6;
-                                                  if (configure::uncertantie_mod && y[j] > 0) {
-                                                      /*acterr += log(2.0) / (chain.nuclides[j].half_life * chain.nuclides[j].half_life) *
-                                                                chain.nuclides[j].d_half_life * configure::dumpoutput[t][j] * 1.e+24;*/
-                                                      acterr += log(2.0) / chain.nuclides[j].half_life * dy[j] * 1.e+24;
-                                                      qerr   += (log(2.0) / (chain.nuclides[j].half_life * chain.nuclides[j].half_life) *
-                                                                chain.nuclides[j].d_half_life * configure::dumpoutput[t][j] * 1.e+24 +
-                                                                log(2.0) / chain.nuclides[j].half_life * dy[j] * 1.e+24) * chain.nuclides[j].decay_energy * 1.e-6;
-                                                  } 
-                                                  //qval += configure::dumpoutput[t][j];
-	             		              }
-	             		          }
-                                          if (!configure::uncertantie_mod) {
-	             		              myfile << t << ";" << actval<<";" << qval << "\n";
-                                          } else {
-                                              myfile << t << ";" << actval<<";" << qval<< ";" << acterr<<";" << qerr << "\n";
-                                          } 
-	             		    }
-	             		    myfile.close();
-                                    std::cout << "CHECK OUT: " <<  y.size() << std::endl;
-	             		}
-	             	    }
-		}
-	    }
-
-	    if (configure::rewrite) {
-		form_materials_xml(v, configure::outmaterials_file);
-	    }
-            
-
-
+    } // materials
+    output.close();
 }
 
 }//namespace executer

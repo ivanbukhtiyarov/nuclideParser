@@ -7,7 +7,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
-#include "pugixml.h"
+#include "../extern/pugiData/pugixml.h"
 #include "parse.h"
 #include "uncertainty.h"
 
@@ -90,7 +90,7 @@ public:
   // Methods
   //! Read a nuclides from xml chain file
   //
-  //! \param[in] nuclide_node pugixml node witch Chain header
+  //! \param[in] nuclide_node pugixml node witch Chain headers
   void read_from_chain_xml(pugi::xml_node nuclide_node);
 
   //! Get a decay transition information
@@ -102,6 +102,11 @@ public:
   //!
   //! \return vector consisting pairs of reactions and reaction target
   std::vector<std::pair<std::string, std::string>> get_reactions();
+
+  //! Get an energy release per reaction for nuclide
+  //!
+  //! \return map with pair reaction type name -> qvalue [eV]
+  std::map<std::string, double> get_qvalue();
 
   //! Get a neutron fission energies
   //!

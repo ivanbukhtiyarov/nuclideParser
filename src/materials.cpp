@@ -1,141 +1,128 @@
 #include "openbps/materials.h"
 #include "openbps/configure.h"
 #include "openbps/parse.h"
+#include "openbps/nuclide.h"
 #include <memory>
 #include <algorithm>
 #include "../extern/pugiData/pugixml.h"
+#include "openbps/reactions.h"
+
 namespace openbps {
 
-Materials::Materials(){
-    name = "default material";
-    volume =  rand() % 100; ;
-    mass =  rand() % 100; ;
-    power = 1.0;
-}
+std::vector<std::unique_ptr<Materials>> materials; //!< vector consisting
+                                                   //!< all materials
 
+//==============================================================================
+// Materials class implementation
+//==============================================================================
+Materials::Materials(){}
 
 void Materials::xml_add_material(pugi::xml_node node) {
     auto material = node.append_child("material");
-    material.append_attribute("name") = name.c_str();
-    material.append_attribute("volume") = volume;
-    material.append_attribute("mass") = mass;
-    material.append_attribute("power") = power;
+    material.append_attribute("name") =  this->Name().c_str();
+    material.append_attribute("volume") =this->Volume();
+    material.append_attribute("mass") =  this->Mass();
+    material.append_attribute("power") = this->Power();
 
     auto nameofn = material.append_child("namenuclides");
-    nameofn.append_child(pugi::node_pcdata).set_value(join(namenuclides," ").c_str());
+    nameofn.append_child(pugi::node_pcdata).set_value(join(namenuclides,
+                                                           " ").c_str());
+    auto concpair = usplit(this->conc);
     auto concnod = material.append_child("conc");
-    concnod.append_child(pugi::node_pcdata).set_value(joinDouble(conc, " ").c_str());
-    std :: cout << "TROUBLE ?" << std ::endl;
+    concnod.append_child(pugi::node_pcdata).set_value(joinDouble(concpair.first,
+                                                                 " ").c_str());
     auto dconcnod = material.append_child("dconc");
-    std :: cout << "TROUBLE ??" << std ::endl;
-    dconcnod.append_child(pugi::node_pcdata).set_value(joinDouble(d_conc, " ").c_str());
-    std :: cout << "NO TROUBLE !!" << std ::endl;
+    dconcnod.append_child(pugi::node_pcdata).set_value(joinDouble(concpair.second,
+                                                                  " ").c_str());
 }
 
-void Materials::add_nuclide(std::string& extname, double extconc, bool isderiv) {
-    auto it = std::find(this->namenuclides.begin(), this->namenuclides.end(), extname);
+void Materials::add_nuclide(const std::string& extname, udouble extconc) {
+    auto it = std::find(this->namenuclides.begin(),
+                        this->namenuclides.end(), extname);
     if (it == this->namenuclides.end()) {
-	this->namenuclides.push_back(extname);
-	if (!isderiv) {
-	    this->conc.push_back(extconc);
-            this->d_conc.push_back(0.0);
-	} else {
-            std :: cout <<"EVER HERE!"<<std::endl;
-	    this->d_conc.push_back(extconc);
-            this->conc.push_back(0.0);
-	}
+        this->namenuclides.push_back(extname);
+        this->conc.push_back(extconc);
+        this->indexnuclides.push_back(get_nuclidarray_index(extname));
     } else {
-       auto index = std::distance(this->namenuclides.begin(), it);
-       if (!isderiv) {
-           this->conc[index] = extconc;
-       } else {
-	   this->d_conc[index] = extconc;
-       }
+        auto index = std::distance(this->namenuclides.begin(), it);
+        this->conc[index] = extconc;
     }
-
 }
 
-void Materials::bindcomposition(Composition& extcompos){
+/*void Materials::bindcomposition(Composition& extcompos){
   this->compos = std::make_shared<Composition>(extcompos);
-}
+}*/
 
-std::vector<Materials> read_materials_from_reactions() {
-    pugi::xml_document doc;
-    std::vector<Materials> m_arr;
+//==============================================================================
+// Non class method implementation
+//==============================================================================
 
-	auto result = doc.load_file(configure::reaction_file.c_str());
-	if (!result) {
-	    std::cerr << "Error: file not found!" << std::endl;
-	}
-	pugi::xml_node root_node = doc.child("compositions");
-
-	std::cout << "I' m in reactions.xml parser (FOR MATERIALS)" << std::endl;
-
-	for (pugi::xml_node tool : root_node.children("composit")) {
-        Materials m;
-        std::cout << tool.first_child().name() << std::endl;
-        auto names = tool.child_value("namenuclides");
-        m.namenuclides = split(names,' ');
-        auto conc = tool.child_value("conc");
-        m.conc = splitAtof(conc, ' ');
-        m_arr.push_back(m);
-	}
-    return m_arr;
-}
-
-void form_materials_xml(std::vector<Materials> m_arr, std::string xml_path) {
+//! Write down materials vector information into xml file
+void form_materials_xml(std::string xml_path) {
     pugi::xml_document doc;
     auto declarationNode = doc.append_child(pugi::node_declaration);
     declarationNode.append_attribute("version") = "1.0";
     declarationNode.append_attribute("encoding") = "UTF-8";
 
-    auto materials = doc.append_child("materials");
-    for(int i = 0; i < m_arr.size(); i++) {
-        m_arr[i].xml_add_material(materials);
+    auto materialsnod = doc.append_child("materials");
+    for(int i = 0; i < materials.size(); i++) {
+        materials[i]->xml_add_material(materialsnod);
         std :: cout << "material was added" << std ::endl;
     }
     bool saveSucceeded = doc.save_file(xml_path.c_str(), PUGIXML_TEXT("  "));
-    //assert(saveSucceeded);
 }
 
-std::vector<Materials> read_materials_from_inp(std::string inp_path) {
+//! Read materials from xml file to a vector
+void read_materials_from_inp(std::string inp_path
+                             ) {
     pugi::xml_document doc;
-    std::vector<Materials> m_arr;
-
+    // Load a file
 	auto result = doc.load_file(inp_path.c_str());
 	if (!result) {
 	    std::cerr << "Error: file not found!" << std::endl;
 	}
 	pugi::xml_node root_node = doc.child("materials");
-
+    // Iterate over materials records
 	for (pugi::xml_node tool : root_node.children("material")) {
-        Materials m;
-        m.name = tool.attribute("name").value();
-        m.volume = atof(tool.attribute("volume").value());
-        m.mass = atof(tool.attribute("mass").value());
-        m.power = atof(tool.attribute("power").value());
-        auto names = tool.child_value("namenuclides");
-        m.namenuclides = split(names,' ');
-        auto conc = tool.child_value("conc");
-        m.conc = splitAtof(conc, ' ');
+        std::string mname {tool.attribute("name").value()};
+        auto m = new Materials(mname,
+                    atof(tool.attribute("volume").value()),
+                    atof(tool.attribute("volume").value()),
+                    atof(tool.attribute("power").value()));
+        m->namenuclides = get_node_array<std::string>(tool, "namenuclides");
+        std::for_each(m->namenuclides.begin(), m->namenuclides.end(),
+                      [m](std::string& nucname) {
+                        m->indexnuclides.push_back(get_nuclidarray_index(
+                                                      nucname));
+                      }
+        );
+        // Read a concentration
+        m->conc = get_node_array<udouble>(tool, "conc");
         if (check_for_node(tool, "dconc")) {
-            auto dconc = tool.child_value("dconc");
-            m.d_conc = splitAtof(dconc, ' ');
+            std::vector<double> dconc = get_node_array<double>(tool, "dconc");
+            int j = 0;
+            if (dconc.size() <= m->conc.size())
+                std::for_each(dconc.begin(), dconc.end(), [&j, m](double& dc) {
+                    m->conc[j].Adddeviation(dc);
+                    j++; }
+                );
         }
-        m_arr.push_back(m);
-	}
-    return m_arr;
+        materials.push_back(std::unique_ptr<Materials>(m));
+    } // for material
+    return;
 }
 
-void matchcompositions(std::vector<Composition>& compositions, std::vector<Materials>& materials) {
+//! Look up all compositions and find a match with material name
+//!
+void matchcompositions() {
     for (auto&  mat: materials) {
-         for  (auto&  compos:compositions ) {
-             if (mat.name==compos.name) {
-	              mat.bindcomposition(compos);
-                 break;
-             }
-         }
-     }
+        for  (size_t j = 0; j < compositions.size(); j++ ) {
+            if (mat->Name()==compositions[j]->Name()) {
+                mat->numcomposition = j;
+                break;
+            }
+        }
+    }
 }
 
-}
+} //namespace openbps

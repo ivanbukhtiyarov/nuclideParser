@@ -89,13 +89,15 @@ message(STATUS "C++ flags: ${cxxflags}")
 list(APPEND lib_SOURCES
       "src/chain.cpp"
       "src/configure.cpp"
-       "src/functionals.cpp"
-       "src/reactions.cpp"
-       "src/executer.cpp"
-       "src/parse.cpp"
-       "src/form_output.cpp"
-       "src/materials.cpp"
-       "extern/pugiData/pugixml.cpp")
+      "src/executer.cpp"
+      "src/filter.cpp"
+      "src/functionals.cpp"
+      "src/materials.cpp"
+      "src/matrix.cpp"
+      "src/nuclide.cpp"
+      "src/parse.cpp"
+      "src/reactions.cpp"
+      "extern/pugiData/pugixml.cpp")
 
 add_library(openbps_lib STATIC ${lib_SOURCES})
 # Includes

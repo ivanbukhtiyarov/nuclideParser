@@ -1,4 +1,4 @@
-#include "nuclide.h"
+#include "openbps/nuclide.h"
 
 #include <iostream>
 #include <string.h>
@@ -6,7 +6,7 @@
 #include <map>
 #include <sstream>
 #include <memory>
-#include "pugixml.h"
+#include "../extern/pugiData/pugixml.h"
 
 namespace openbps {
 //==============================================================================
@@ -126,6 +126,16 @@ std::vector<std::pair<std::string, std::string>> ChainNuclide::get_reactions() {
                          this->reaction_arr[i].target));
     }
     return result;
+}
+
+//! Get an energy release per reaction for nuclide
+std::map<std::string, double> ChainNuclide::get_qvalue() {
+    std::map<std::string, double> result;
+    for (int i = 0; i < this->reaction_arr.size(); i++) 
+        if (this->reaction_arr[i].q > 0)
+            result[this->reaction_arr[i].type] = this->reaction_arr[i].q;
+    return result;
+
 }
 
 //! Get a neutron fission energies
