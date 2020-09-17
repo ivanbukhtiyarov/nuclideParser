@@ -6,11 +6,11 @@
   <numbers>10</numbers>
   <timestep>1.0</timestep>
   <timerecord year="0" month="0" day="0.0" hour="0" minute="0" second="1"/>
-  <method>iteration</method>
-  <inpmaterials>./Xmls/materialso.xml</inpmaterials>
+  <method>chebyshev</method>
+  <inpmaterials>./Xmls/materialsi.xml</inpmaterials>
   <outmaterials>./Xmls/materialso.xml</outmaterials>
   <epb>1.e-3</epb>
-  <uncertanties>true</uncertanties>
+  <uncertanties>false</uncertanties>
   <decay_print>true</decay_print>
-  <cram_order>48</cram_order>
+  <cram_order>16</cram_order>
 </configure>

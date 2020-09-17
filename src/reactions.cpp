@@ -117,7 +117,6 @@ void Composition::depcopymap_(std::map<size_t, std::vector<double>>& fmap,
             if (fmap.find(it->first) == fmap.end()){
                 fmap[it->first] = it->second;
             }
-
         }
     }
 
@@ -186,7 +185,6 @@ Composition::get_fluxenergy() {
     std::pair<std::vector<double>, std::vector<double>> result;
     size_t ng;
     double fluxnorm {0.0};
-    //std::vector<std::pair<double, double>> forsort_;
     if (spectrum_.empty()) {
         std::for_each(flux_.begin(), flux_.end(), [&] (udouble n) {
             fluxnorm += n.Real();
