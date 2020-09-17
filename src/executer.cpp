@@ -137,6 +137,7 @@ void init_solver() {
 
 //! Run a calculation process
 void run_solver() {
+    bool isMaterial {false};
     std::cout << "We star execution\n";
     // Read a chain from xml file
     Chain chain = read_chain_xml(configure::chain_file);
@@ -151,7 +152,7 @@ void run_solver() {
     for (auto& mat : materials) {
         xt::xarray<double> y =
                 make_concentration(chain, mat->namenuclides, mat->conc);
-        // Prepare dump to store every step results calculation
+        // Prepare dump to store every step of calculation results
         if (configure::outwrite) {
             configure::dumpoutput.clear();
             configure::dumpoutput.resize(configure::numstep);
@@ -164,7 +165,7 @@ void run_solver() {
         case Mode::baetman:
             std::cout << "Baetman implementation in progress" << std::endl;
             break;
-            // Iteration method
+        // Iteration method
         case Mode::iteration:
         {
             IterMatrix im(dm);
@@ -184,7 +185,7 @@ void run_solver() {
             }
         }
             break;
-            // Chebyshev rational approximation method
+        // Chebyshev rational approximation method
         case Mode::chebyshev:
         {
             CramMatrix cm(dm);
@@ -201,7 +202,7 @@ void run_solver() {
         }//switch case
         size_t j {0};
         for (auto& item : chain.name_idx) {
-            std::cout << item.first << " = " << y[j] << std::endl;
+            std::cout << item.first << " = " << y[j] << " err: "<<dy[j]<< std::endl;
             if (configure::rewrite) {
                 if (configure::uncertantie_mod) {
                     mat->add_nuclide(item.first, udouble(y[j], dy[j]));
@@ -211,11 +212,23 @@ void run_solver() {
             }
             j++;
         }
+        // Write dump to the text *.csv file
+        if (configure::outwrite) {
+            // If materials fitler is present
+            // then applying it
+            if (materialfilter != nullptr) {
+                materialfilter->apply(mat->Name(), isMaterial);
+            } else {
+                isMaterial = true;
+            }
+            if (isMaterial)
+                apply_filters(chain, mat->Name());
+         }
     }//for materials
+    // Write down the getting nuclear concentration for every material
     if (configure::rewrite)
         form_materials_xml(configure::outmaterials_file);
-    if (configure::outwrite)
-        apply_filters(chain);
+
 }
 
 //! Iterative method implementation v.1. without uncertanties
@@ -416,6 +429,7 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp,
                         arr(iparent);
                 if (dr(iparent) < 0.0) dr(iparent) = 0.0;
                 if (y(iparent) > 0.0) dy(iparent) = ds(iparent);
+                if (y(iparent) < 1.e-80 || dy(iparent) < 0.) dy(iparent) = 0.0;
             }
             ro = y;
             // Check convergence criteria
@@ -441,6 +455,7 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp,
         if (configure::outwrite) {
             for (int i = 0; i < y.size(); i++) {
                 configure::dumpoutput[k][i][0] = y(i);
+                configure::dumpoutput[k][i][1] = dy(i);
             }
         }
     }//numstep
@@ -507,10 +522,15 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
 }
 
 //! Apply filters to result
-void apply_filters(const Chain &chainer) {
-    bool isMaterial {false};
+void apply_filters(const Chain &chainer, const std::string& matname) {
     std::array<double, 4> storeval {0., 0., 0., 0.};
-    std::ofstream output(configure::path_output + "outlog.csv");
+    std::ofstream output(configure::path_output + "outlog.csv",
+                         std::ofstream::app);
+    if (!output.is_open()) {
+        std::cout << "Warning!: " <<
+                     " Output file for write dump is not open" << std::endl;
+        return;
+    }
     std::vector<int> xscale;
     std::vector<int> yscale;
     std::vector<int> mainheader;
@@ -592,79 +612,69 @@ void apply_filters(const Chain &chainer) {
     for (auto& k : addheader)
         output << nuclnames[k] << ";";
     output << std::endl;
-    for (auto& m : materials) {
-        // If materials fitler is present
-        // then applying it
-        if (materialfilter != nullptr) {
-            materialfilter->apply(m->Name(), isMaterial);
-        } else {
-            isMaterial = true;
-        }
-        if (isMaterial) {
-            output << m->Name() << ";" << std::endl;
-            for (auto t : xscale) {
-                output << configure :: timestep / configure :: numstep *
-                          (t + 1) << ";";
-                for (size_t i = 0; i < nuclnames.size(); i++) {
-                    if (std::find(yscale.begin(), yscale.end(), i) ==
-                            yscale.end()) {
-                        size_t ijk {chainer.name_idx.at(
-                                        nuclnames[i])};
-                        udouble uhalflife {nuclides[chainer.name_idx.at(
-                                        nuclnames[i])]->half_life};
-                        for (size_t k = 0; k < mainheader.size(); k++) {
-                            if (mainheader[k] == 1 &&
-                                    uhalflife.Real() > 0)//Decay-rate
-                                storeval[0] +=
-                                        log(2.0) /
-                                        uhalflife.Real()
-                                        * configure::dumpoutput[t][i][0] *
-                                        1.e+24;
-                            if (mainheader[k] == 2 &&
-                                    uhalflife.Real() > 0) //Decay heat
-                                storeval[1] +=
-                                        log(2.0) /
-                                        uhalflife.Real() *
-                                        nuclides[ijk]->decay_energy
-                                        * configure::dumpoutput[t][i][0] *
-                                        1.e+24 * 1.e-6;
-                            if (mainheader[k] == 3 &&
-                                    uhalflife.Real() > 0) //d(Decay-rate)
-                                storeval[2] +=
-                                        (log(2.0) /
-                                         uhalflife).Dev() *
-                                        configure::dumpoutput[t][i][0] *
-                                        1.e+24 +
-                                        log(2.0) /
-                                        uhalflife.Real()
-                                        * configure::dumpoutput[t][i][1] *
-                                        1.e+24;
-                            if (mainheader[k] == 4 &&
-                                    uhalflife.Real() > 0) //d(Decay heat)
-                                storeval[3] +=
-                                        ((log(2.0) /
-                                          uhalflife
-                                          ).Dev() *
-                                         configure::dumpoutput[t][i][0] +
-                                        log(2.0) /
-                                        uhalflife.Real()
-                                        * configure::dumpoutput[t][i][1]) *
-                                        nuclides[ijk]->decay_energy *
-                                        1.e+24 * 1.e-6;
-                        } // for with if
-                    }
-                } // for nuclides
-                for (size_t k = 1; k < mainheader.size(); k++) {
-                    output << storeval[mainheader[k] - 1] << ";";
-                    storeval[mainheader[k] - 1] = 0.0;
-                }
-                for (auto& k : addheader)
-                    output << configure::dumpoutput[t][k][0] << ";";
-                output << std::endl;
-            } // for time
-        } // if
 
-    } // materials
+    output << matname << ";" << std::endl;
+    for (auto t : xscale) {
+        output << configure :: timestep / configure :: numstep *
+                  (t + 1) << ";";
+        for (size_t i = 0; i < nuclnames.size(); i++) {
+            if (std::find(yscale.begin(), yscale.end(), i) ==
+                    yscale.end()) {
+                size_t ijk {chainer.name_idx.at(
+                                nuclnames[i])};
+                udouble uhalflife {nuclides[chainer.name_idx.at(
+                                nuclnames[i])]->half_life};
+                for (size_t k = 0; k < mainheader.size(); k++) {
+                    if (mainheader[k] == 1 &&
+                            uhalflife.Real() > 0)//Decay-rate
+                        storeval[0] +=
+                                log(2.0) /
+                                uhalflife.Real()
+                                * configure::dumpoutput[t][i][0] *
+                                1.e+24;
+                    if (mainheader[k] == 2 &&
+                            uhalflife.Real() > 0) //Decay heat
+                        storeval[1] +=
+                                log(2.0) /
+                                uhalflife.Real() *
+                                nuclides[ijk]->decay_energy
+                                * configure::dumpoutput[t][i][0] *
+                                1.e+24 * 1.e-6;
+                    if (mainheader[k] == 3 &&
+                            uhalflife.Real() > 0) //d(Decay-rate)
+                        storeval[2] +=
+                                (log(2.0) /
+                                 uhalflife).Dev() *
+                                configure::dumpoutput[t][i][0] *
+                                1.e+24 +
+                                log(2.0) /
+                                uhalflife.Real()
+                                * configure::dumpoutput[t][i][1] *
+                                1.e+24;
+                    if (mainheader[k] == 4 &&
+                            uhalflife.Real() > 0) //d(Decay heat)
+                        storeval[3] +=
+                                ((log(2.0) /
+                                  uhalflife
+                                  ).Dev() *
+                                 configure::dumpoutput[t][i][0] +
+                                log(2.0) /
+                                uhalflife.Real()
+                                * configure::dumpoutput[t][i][1]) *
+                                nuclides[ijk]->decay_energy *
+                                1.e+24 * 1.e-6;
+                } // for with if
+            }
+        } // for nuclides
+        for (size_t k = 1; k < mainheader.size(); k++) {
+            output << storeval[mainheader[k] - 1] << ";";
+            storeval[mainheader[k] - 1] = 0.0;
+        }
+        for (auto& k : addheader)
+            output << configure::dumpoutput[t][k][0] << ";";
+        output << std::endl;
+    } // for time
+
     output.close();
 }
 

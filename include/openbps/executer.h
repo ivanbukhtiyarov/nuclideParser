@@ -61,7 +61,7 @@ void iterative(xt::xarray<double>& matrix, xt::xarray<double>& sigp,
 //! Iterative method implementation v.2.
 //! Method based on algorythm described at paper Seleznev E.F., Belov A.A.,
 //! Belousov V.I., Chernova I.S. "BPSD CODE UPGRADE FOR SOLVING
-//! THE NUCLEAR KINETICS PROBLEM" Izvestiya VUZov: Yadernaya energetica N 4 2018 
+//! THE NUCLEAR KINETICS PROBLEM" Izvestiya VUZov: Yadernaya energetica N 4 2018
 //! pp 115-127. The main advantage is ability to get results uncertainty in the
 //! main calculation process. This overloading method is with uncertainty 
 //! analysis.
@@ -83,7 +83,7 @@ void iterative (xt::xarray<double>& matrix, xt::xarray<double>& sigp,
 //! Method (CRAM), as described in the following paper: M. Pusa, "`Higher-Order
 //! Chebyshev Rational Approximation Method and Application to Burnup Equations
 //! <https://doi.org/10.13182/NSE15-26>`_," Nucl. Sci. Eng., 182:3, 297-318.and
-//! this method implementation in OpenMC project on SciPy Python library:
+//! its method implementation in OpenMC project on SciPy Python library:
 //! https://github.com/openmc-dev/openmc/blob/develop/openmc/deplete/cram.py
 //!
 //!
@@ -101,7 +101,8 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
 //! Apply filters to result
 //!
 //! \param[in] chainer chain object
-void apply_filters(const Chain& chainer);
+//! \param[in] matname name of material
+void apply_filters(const Chain &chainer, const std::string& matname);
 
 } // namespace executer
 
