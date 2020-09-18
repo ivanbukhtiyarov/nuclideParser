@@ -515,10 +515,11 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
             y(i) = ytemp(i);
         // Fill the dump
         if (configure::outwrite) {
-            for (int i = 0; i < y.size(); i++)
+            for (int i = 0; i < y.size(); i++) {
                 if (y(i) < 0.0)
                     y(i) = 0.0;
                 configure::dumpoutput[t][i][0] = y(i);
+            }
         }
     } // time iteration
 }

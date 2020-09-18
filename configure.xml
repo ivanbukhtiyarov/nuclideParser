@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <configure>
   <chain>./Xmls/chain_endfb71.xml</chain>
-  <reaction>./Xmls/reactions.xml</reaction>
+  <reaction>./Xmls/reactions_XMAS172.xml</reaction>
   <nuclides>./Xmls/nuclides.xml</nuclides>
   <numbers>10</numbers>
   <timestep>1.0</timestep>
