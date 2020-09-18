@@ -18,7 +18,7 @@ namespace openbps {
 
 std::vector<std::unique_ptr<Composition>> compositions;
 std::map<std::string, int> composmap;
-size_t indexall;
+int indexall {-1};
 
 //==============================================================================
 // Composition class implementation
@@ -75,7 +75,8 @@ Composition::Composition(pugi::xml_node node) {
         }
         for (pugi::xml_node tool : node.child("xslibs").children("dxslib")) {
             Sxs deriv_rxs {parse_xs_xml_(tool, rxs, "dxslib")};
-            for (auto ixs = this->xslib.begin(); ixs != this->xslib.end(); ixs++) {
+            for (auto ixs = this->xslib.begin();
+                 ixs != this->xslib.end(); ixs++) {
                 if (ixs->xsname == deriv_rxs.xsname &&
                         ixs->xstype == deriv_rxs.xstype) {
                     for (size_t j = 0; j < deriv_rxs.rxs.size() &&
@@ -113,7 +114,7 @@ void Composition::depcopymap_(std::map<size_t, std::vector<double>>& fmap,
 
     std::map<size_t, std::vector<double>>::iterator it;
     if (!smap.empty()) {
-        for ( it= smap.begin(); it != smap.end(); ++it ) {
+        for (it = smap.begin(); it != smap.end(); ++it) {
             if (fmap.find(it->first) == fmap.end()){
                 fmap[it->first] = it->second;
             }
@@ -216,7 +217,8 @@ void read_reactions_xml() {
     std::cout << "I' m in reactions.xml parser" << std::endl;
 
     for (pugi::xml_node tool : root_node.children("composit")) {
-        compositions.push_back(std::unique_ptr<Composition>(new Composition(tool)));
+        compositions.push_back(std::unique_ptr<Composition>(new
+                                                            Composition(tool)));
         int index = compositions.size() - 1;
         if (compositions[index]->Name() == "all") {
             indexall = index;
@@ -224,9 +226,11 @@ void read_reactions_xml() {
         composmap.insert({compositions[index]->Name(), index});
     }
 
-    for (size_t i = 0; i < compositions.size(); i++) {
-        compositions[i]->deploy_all(*compositions[indexall]);
-        compositions[i]->get_reaction();
+    for (size_t i = 0; i < compositions.size(); i++)
+        if (i != indexall) {
+            if (indexall > -1)
+                compositions[i]->deploy_all(*compositions[indexall]);
+            compositions[i]->get_reaction();
     }
 }
 

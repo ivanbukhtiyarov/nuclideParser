@@ -19,8 +19,9 @@ class BaseCompostion;
 class Composition;
 
 extern std::vector<
-std::unique_ptr<Composition>> compositions;   //!< vector with compositions
-extern size_t indexall;                       //!< index of all record
+std::unique_ptr<Composition>> compositions;   //!< vector with all compositions
+extern int indexall;                          //!< index of "all" record with
+                                              //!< common shared data
 extern std::map<std::string, int> composmap;  //!< composition map with name:int
                                               //!< values
 

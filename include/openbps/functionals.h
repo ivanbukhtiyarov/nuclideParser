@@ -32,7 +32,7 @@ std::vector<T> collapsing(const std::vector<double>& xval,
         std::cerr << "Incorrect vector sizes to collapse it\n";
     }
     // Output vector
-    std::vector<T> ytarget(xtarget.size() + 1);
+    std::vector<T> ytarget(xtarget.size() - 1); // +1??
 
     if (xtarget[xtarget.size()-1] < xval[0]) {
         for (int i = 0; i < xtarget.size(); i++){

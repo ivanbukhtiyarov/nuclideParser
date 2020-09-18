@@ -361,7 +361,7 @@ xt::xarray<double> make_concentration(Chain& chainer,
 //! Find out power normalization coefficient to reaction-rate
 //!
 //!\param[in] mat Material to perform normalization
-void material_normalization(Materials& mat);
+void power_normalization(Materials& mat);
 
 } // namespace openbps
 #endif // MATRIX_H

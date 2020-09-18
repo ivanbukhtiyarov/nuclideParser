@@ -130,9 +130,12 @@ void init_solver() {
     read_nuclide_xml(configure::nuclide_file);
     // Read a materials
     read_materials_from_inp(configure::inmaterials_file);
-    if (!configure::decay_extra_out)
-        // If mode is not heat residual
+    if (!configure::decay_extra_out) {
+        // If mode is not decay only calculation
         read_reactions_xml();
+        // Make bind between materials and compositions
+        matchcompositions();
+    }
 }
 
 //! Run a calculation process
@@ -141,8 +144,6 @@ void run_solver() {
     std::cout << "We star execution\n";
     // Read a chain from xml file
     Chain chain = read_chain_xml(configure::chain_file);
-    // Build bind between materials and compositions
-    matchcompositions();
     // Form a calculation matrix
     DecayMatrix dm(chain.name_idx.size());
     dm.form_matrixreal(chain);
@@ -228,7 +229,6 @@ void run_solver() {
     // Write down the getting nuclear concentration for every material
     if (configure::rewrite)
         form_materials_xml(configure::outmaterials_file);
-
 }
 
 //! Iterative method implementation v.1. without uncertanties
@@ -516,6 +516,8 @@ void cram(xt::xarray<double>& matrix, xt::xarray<double>& y,
         // Fill the dump
         if (configure::outwrite) {
             for (int i = 0; i < y.size(); i++)
+                if (y(i) < 0.0)
+                    y(i) = 0.0;
                 configure::dumpoutput[t][i][0] = y(i);
         }
     } // time iteration

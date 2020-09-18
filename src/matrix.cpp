@@ -351,21 +351,24 @@ xt::xarray<double> CramMatrix::matrixreal(Chain& chain,
     if (icompos > -1) {
         // Get neutron flux - energy value descretization
         pair2 = compositions[icompos]->get_fluxenergy();
-        // For xslib
-        for (auto& obj : compositions[icompos]->xslib) {
+        for (auto it = chain.name_idx.begin(); it != chain.name_idx.end(); it++) {
+            size_t inucl = it->second; // from nuclide
+
+            size_t i = chain.get_nuclide_index(it->first);
+            // For xslib
+            for (auto& obj : compositions[icompos]->xslib) {
             // If cross section presented for nuclides
-            auto search = std::find_if(chain.name_idx.begin(),
-                                       chain.name_idx.end(),
-                                       [&obj](std::pair<std::string,
-                                       size_t> item){
-                    return obj.xsname == item.first;});
-            if (search != chain.name_idx.end()) {
-                size_t inucl = chain.name_idx[obj.xsname];
-                size_t i = chain.get_nuclide_index(obj.xsname);
+            if (obj.xsname == it->first) {
                 double rr {0.0};
                 // Sum reaction-rates over energy group
                 for (auto& r: obj.rxs)
                     rr += r.Real();
+                if ((obj.xsname == "U235") && (obj.xstype == "fission"))
+                        std::cout << "U235 rrate : "<<rr<<std::endl;
+                if ((obj.xsname == "U238") && (obj.xstype == "fission"))
+                        std::cout << "U238 rrate : "<<rr<<std::endl;
+                if ((obj.xsname == "Pu239") && (obj.xstype == "fission"))
+                        std::cout << "Pu239 rrate : "<<rr<<std::endl;
                 // Iterate over chain nuclides transition
                 for (auto& r : nuclides[inucl]->get_reactions()) {
                     // If match
@@ -415,6 +418,7 @@ xt::xarray<double> CramMatrix::matrixreal(Chain& chain,
             } // if nuclide is in crossection data and chain
         } // for xslib in composition
     } // if composition is presented
+    } // for all nuclides
 
     return result;
 }
@@ -446,7 +450,7 @@ xt::xarray<double> make_concentration(Chain& chainer,
 }
 
 //! Find out power normalization coefficient to reaction-rate
-void material_normalization(Materials& mat) {
+void power_normalization(Materials& mat) {
      double R {0.0};
      for (size_t i = 0; i < mat.conc.size(); i++) {
          auto search = std::find_if(nuclides.begin(),
