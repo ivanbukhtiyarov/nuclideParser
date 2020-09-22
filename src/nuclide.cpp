@@ -9,9 +9,11 @@
 #include "../extern/pugiData/pugixml.h"
 
 namespace openbps {
+
 //==============================================================================
 // Global variables
 //==============================================================================
+
 bool isNuclidePresent {false};
 // Model nuclides container
 std::vector<std::unique_ptr<ChainNuclide>> nuclides;
@@ -19,7 +21,6 @@ std::vector<std::unique_ptr<ChainNuclide>> nuclides;
 //==============================================================================
 // Nuclide class implementation
 //==============================================================================
-
 ChainNuclide::s_decay ChainNuclide::parse_decay_(pugi::xml_node node) {
     ChainNuclide::s_decay temp;
 
@@ -64,6 +65,23 @@ ChainNuclide::s_nfy ChainNuclide::parse_nfy_(pugi::xml_node node) {
     }
     return temp;
 }
+
+//! Fill the yieldproduct map
+void ChainNuclide::make_product_yields_() {
+
+    for (size_t i = 0; i < this->nfy.energies.size(); i++) {
+        for (auto& items : this->nfy.yield_arr[i].product_data)
+            if (this->nfy.yieldproduct.find(items.first) ==
+                    this->nfy.yieldproduct.end()) {
+                this->nfy.yieldproduct[items.first] = std::vector<double>();
+                this->nfy.yieldproduct[items.first].push_back(items.second);
+            } else {
+                this->nfy.yieldproduct[items.first].push_back(items.second);
+            }
+    }
+
+}
+
 // Read info from chain.xml file
 void ChainNuclide::read_from_chain_xml(pugi::xml_node nuclide_node) {
 
@@ -95,6 +113,7 @@ void ChainNuclide::read_from_chain_xml(pugi::xml_node nuclide_node) {
     // Neutron fission yields processing
     if (nuclide_node.child("neutron_fission_yields")) {
         this->nfy = parse_nfy_(nuclide_node.child("neutron_fission_yields"));
+        this->make_product_yields_();
     }
     std::cout << "Parse finish for " << this->name_ << std::endl;
 }
@@ -140,12 +159,21 @@ std::map<std::string, double> ChainNuclide::get_qvalue() {
 
 //! Get a neutron fission energies
 std::vector<double> ChainNuclide::get_nfy_energies() {
+    std::sort(this->nfy.energies.begin(), this->nfy.energies.end(),
+              [](double& felem, double& selem) {return felem < selem;});
     return this->nfy.energies;
 }
 
 //! Get a neutron fission data by energy index
-std::map<std::string, double> ChainNuclide::get_product_data(int index){
+std::map<std::string, double> ChainNuclide::get_product_data(int index) {
     return this->nfy.yield_arr[index].product_data;
+}
+
+//! Get a fission yields for group energy discretization
+std::map<std::string,
+std::vector<double>> ChainNuclide::get_yield_product() {
+
+    return this->nfy.yieldproduct;
 }
 
 //==============================================================================

@@ -26,6 +26,7 @@ std::string nuclide_file;         //!< Nuclides database in *.xml
 std::string reaction_file;        //!< Reaction-filename.xml
 std::string inmaterials_file;     //!< Input materials-filename.xml
 std::string outmaterials_file;    //!< Output materials-filename.xml
+std::vector<std::string> libs;    //!< External libs with cross-sections
 double timestep;                  //!< Time of simulation
 int numstep;                      //!< Number of time step
 double epb {1.e-03};              //!< accuracy of calculation
@@ -116,6 +117,12 @@ void read_conigure_xml()
     // Read a name of materials output *.xml file
     if (check_for_node(root, "outmaterials")) {
         outmaterials_file = get_node_value(root, "outmaterials");
+    }
+    // Read an external cross-sections *.xml files
+    if (check_for_node(root, "impxslibs")) {
+        for (pugi::xml_node tool : root.children("impxslibs")) {
+            libs.push_back(get_node_value(tool, "impxslib"));
+        }
     }
     // Read an output directory name
     if (check_for_node(root, "output")) {

@@ -63,8 +63,11 @@ public:
   };
 
   struct s_nfy {
-    std::vector<double> energies;  //!< Energies of flying neutron
-    std::vector<s_yield> yield_arr;//!< Yield data
+    std::vector<double> energies;     //!< Energies of flying neutron
+    std::vector<s_yield> yield_arr;   //!< Yield data
+    std::map<std::string,
+    std::vector<double>> yieldproduct;//!< Number of yields for \keyword nuclide
+
   };
 
   struct s_decay {
@@ -119,8 +122,12 @@ public:
   //! \return map with target nuclide name and its fraction
   std::map<std::string, double> get_product_data(int index);
 
-  //
-
+  //! Get a fission yields for group energy discretization
+  //!
+  //! \return map with \keyword a target nuclide name and \value yields by
+  //! neutron energy
+  std::map<std::string,
+  std::vector<double>> get_yield_product();
   //----------------------------------------------------------------------------
   // Attributes
   udouble half_life;
@@ -138,6 +145,8 @@ private:
   s_nfy nfy;             //!< Data for nuclear fission yields (if presented)
   //----------------------------------------------------------------------------
   // Methods
+  //! Fill the yieldproduct map
+  void make_product_yields_();
   //! Get a decay data from xml node
   s_decay parse_decay_(pugi::xml_node node);
   //! Get a reaction data from xml node

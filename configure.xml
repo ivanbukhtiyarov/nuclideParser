@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <configure>
-  <chain>./Xmls/chain_endfb71.xml</chain>
-  <reaction>./Xmls/reactions_XMAS172.xml</reaction>
+  <chain>./Xmls/chainf.xml</chain>
+  <reaction>./Xmls/reactions.xml</reaction>
   <nuclides>./Xmls/nuclides.xml</nuclides>
+  <impxslibs>
+    <impxslib>./Xmls/XMAS172.xml</impxslib>
+    <impxslib>./Xmls/add.xml</impxslib>
+  </impxslibs>
   <numbers>10</numbers>
   <timestep>1.0</timestep>
   <timerecord year="0" month="0" day="0.0" hour="0" minute="0" second="1"/>
@@ -10,6 +14,7 @@
   <inpmaterials>./Xmls/materialsi.xml</inpmaterials>
   <outmaterials>./Xmls/materialso.xml</outmaterials>
   <epb>1.e-3</epb>
+  <decaykey>false</decaykey>
   <uncertanties>false</uncertanties>
   <decay_print>true</decay_print>
   <cram_order>16</cram_order>

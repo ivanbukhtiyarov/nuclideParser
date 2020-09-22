@@ -30,6 +30,7 @@ extern std::string nuclide_file;          //!< Nuclides database in file *.xml
 extern std::string reaction_file;         //!< Reaction-filename.xml
 extern std::string inmaterials_file;      //!< Input materials-filename.xml
 extern std::string outmaterials_file;     //!< Output materials-filename.xml
+extern std::vector<std::string> libs;     //!< External libs with cross-sections
 extern int numstep;                       //!< Number of substep per
                                           //!< one time step
 extern double timestep ;                  //!< Length of time interval

@@ -61,7 +61,7 @@ public:
     //!
     //! \param[in] name of nuclide
     //! \return index in chain order
-    int get_nuclide_index(const std::string name);
+    int get_nuclide_index(const std::string& name);
     //--------------------------------------------------------------------------
     //! Attributes
     std::map<std::string, size_t> name_idx; //!< Dictionary between \keyword

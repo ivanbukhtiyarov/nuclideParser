@@ -332,8 +332,7 @@ xt::xarray<double> IterMatrix::dsigp(Chain& chain,
 xt::xarray<double> CramMatrix::matrixreal(Chain& chain,
                                             const Materials& mat) {
     // Variables for calculation fissiop product yields by spectrum
-    std::pair<std::vector<double>, std::vector<double>> pair1, pair2;
-    std::vector<std::string> fplist;
+    std::pair<std::vector<double>, std::vector<double>> pair2;
     std::vector<double> weight;
     size_t k {0};
     //
@@ -353,7 +352,6 @@ xt::xarray<double> CramMatrix::matrixreal(Chain& chain,
         pair2 = compositions[icompos]->get_fluxenergy();
         for (auto it = chain.name_idx.begin(); it != chain.name_idx.end(); it++) {
             size_t inucl = it->second; // from nuclide
-
             size_t i = chain.get_nuclide_index(it->first);
             // For xslib
             for (auto& obj : compositions[icompos]->xslib) {
@@ -379,38 +377,28 @@ xt::xarray<double> CramMatrix::matrixreal(Chain& chain,
                             result(k, i) += rr * PWD * mat.normpower;
                         } else {
                             // Considering fission reaction by energy separately
-                            for (size_t j = 0;
-                                 j < nuclides[inucl]->get_nfy_energies().size();
-                                 j++) {
-                                // Fission yields by product
-                                for (auto& item: nuclides[inucl]->
-                                     get_product_data(j)) {
-                                    if (std::find(fplist.begin(), fplist.end(),
-                                                  item.first) == fplist.end()) {
-                                        pair1 = chain.get_yield_map(inucl,
-                                                                       item.
-                                                                       first);
-                                        k = chain.get_nuclide_index(item.first);
-                                        fplist.push_back(item.first);
-                                        double br {0.0};
-                                        double norm {0.0};
-                                        if (weight.empty())
-                                            weight = transition(pair2.first,
-                                                                pair2.second,
-                                                                pair1.first);
-                                        for (int l = 0; l < weight.size(); l++) {
-                                            br += weight[l] * pair1.second[l];
-                                            norm += weight[l];
-                                        } // for weight
+                            std::vector<double> energies =
+                                    nuclides[inucl]->get_nfy_energies();
+                            // Fission yields by product
+                            for (auto& item: nuclides[inucl]->
+                                     get_yield_product()) {
+                                k = chain.get_nuclide_index(item.first);
+                                double br {0.0};
+                                double norm {0.0};
+                                if (weight.empty())
+                                    weight = transition(pair2.first,
+                                                        pair2.second,
+                                                        energies);
+                                    for (int l = 0; l < weight.size(); l++) {
+                                         br += weight[l] * item.second[l];
+                                         norm += weight[l];
+                                    } // for weight
 
-                                        result(k, i) += br / norm * rr * PWD *
-                                                       mat.normpower;
-                                        norm = 1.0;
-                                    } // if find
-                                } // for product
-                                weight.clear();
-                            } // for yield energies
-                            fplist.clear();
+                                    result(k, i) += br / norm * rr * PWD *
+                                                   mat.normpower;
+                                    norm = 1.0;
+                            } // for product
+                            weight.clear();
                         } // fission yields
                     } // if reaction = chain.reaction
                 } // run over reaction

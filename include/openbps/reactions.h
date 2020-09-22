@@ -17,24 +17,51 @@ namespace openbps {
 
 class BaseCompostion;
 class Composition;
-
+class Sxs;
+class Xslibs;
 extern std::vector<
-std::unique_ptr<Composition>> compositions;   //!< vector with all compositions
-extern int indexall;                          //!< index of "all" record with
+std::unique_ptr<Composition>> compositions;   //!< Vector with all compositions
+extern int indexall;                          //!< Index of "all" record with
                                               //!< common shared data
-extern std::map<std::string, int> composmap;  //!< composition map with name:int
+extern std::map<std::string, int> composmap;  //!< Composition map with name:int
                                               //!< values
+extern std::vector<Xslibs> externxslibs;      //!< External cross-section data
+                                              //!< source
 
 //==============================================================================
-// Struct cross-section description
+// Class with cross-section description
 //==============================================================================
-
-struct Sxs {
+class Sxs {
+public:
+    //--------------------------------------------------------------------------
+    // Constructors, destructors, factory functions
+    Sxs() {}
+    Sxs(pugi::xml_node node,const std::string& rxs, const std::string& redex);
+    //--------------------------------------------------------------------------
+    // Attributes
     std::string xsname;      //!< Name of cross-section/reaction
     std::string xstype;      //!< Cross-section/reaction type
     std::vector<udouble> rxs;//!< Reactions vector by energy group
     std::vector<udouble> xs_;//!< Cross-sections values by energy group
 
+};
+
+class Xslibs {
+public:
+    //--------------------------------------------------------------------------
+    // Constructors, destructors, factory functions
+    Xslibs() {}
+    Xslibs(pugi::xml_node node);
+    //--------------------------------------------------------------------------
+    // Attributes
+    std::vector<Sxs> xsdata; //!< Data source with cross-sections
+    size_t numgroup;         //!< Energy group number for external xslib
+    //--------------------------------------------------------------------------
+    // Methods
+    std::vector<double> get_egroups() { //!< Get an energy group structure for
+    return energies_;}                  //!< external cross-section source
+private:
+    std::vector<double> energies_; //!< Energies for external cross-section lib
 };
 
 //==============================================================================
@@ -76,10 +103,6 @@ class Composition : public BasicComposition {
 public:
     //--------------------------------------------------------------------------
     // Constructors, destructors, factory functions
-    Composition(Composition& tmp) = delete;
-    Composition& operator =(const Composition& tmp) = delete;
-    Composition(Composition&& tmp) = default;
-    Composition&& operator =(Composition&& tmp) = delete;
     Composition(std::string name, size_t nuclidnumber, size_t energynumber):
                      BasicComposition(name, nuclidnumber, energynumber) {}
 
@@ -92,6 +115,10 @@ public:
     void deploy_all(Composition &externcompos);
     //! Calculate reaction rate for all reactions in xslib
     void get_reaction();
+    //! Import data from external cross section source
+    //!
+    //! \param[in] implibs cross section library to calculate reaction rates
+    void import_xsdata(Xslibs& implibs);
     //! Get spectrum energy distribution
     //!
     //! \return pair with energies and spectrum distr
@@ -109,6 +136,14 @@ private:
     //! \param[out] smap the copied data
     void depcopymap_(std::map<size_t, std::vector<double>>& fmap,
                      std::map<size_t, std::vector<double>>& smap);
+
+    //! Calculate reaction-rate from cross-section data and flux
+    //!
+    //! \param[in] ixs cross-section data
+    //! \param[in] extenergy energy range of cross section data
+    //! \param[out]rxs calculated reaction rate
+    void calculate_rr_(Sxs& ixs, const std::vector<double> &extenergy,
+                       udouble& rxs);
 
     //--------------------------------------------------------------------------
     // Attributes
@@ -129,8 +164,17 @@ private:
 Sxs parse_xs_xml_
 (pugi::xml_node node, const std::string& rxs,const std::string& redex);
 
+//! Parse xslibs
+//!
+//! \param[in] node xml node with xslib data structure
+//! \param[inout] xssource data source to store xslib in
+void parse_xml_xslibs_(pugi::xml_node node, std::vector<Sxs>& xssource);
+
 //! Read compositions from xml file
 void read_reactions_xml();
+
+//! Read an imported cross section data library from *.xml files
+void read_importedlib_xml();
 
 }
 

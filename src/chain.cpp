@@ -9,9 +9,11 @@
 #include <algorithm>
 
 namespace openbps {
+
 //==============================================================================
 // Chain implementation
 //==============================================================================
+
 Chain::Chain(pugi::xml_node node) {
     std::string current_name;
     size_t num;
@@ -208,7 +210,7 @@ Chain::get_yield_map(size_t father, const std::string& daughter) {
 }
 
 //! Get an index in chain nuclides array
-int Chain::get_nuclide_index(const std::string name) {
+int Chain::get_nuclide_index(const std::string& name) {
     int result {0};
     for (auto& item : name_idx)
         if (item.first == name) {
@@ -230,7 +232,7 @@ Chain read_chain_xml(const std::string& filename) {
     pugi::xml_node chain_node = doc.child("depletion_chain");
 
     Chain chainer(chain_node);
-    std::vector<std::pair<int, std::string>> out{chainer.form_idx_name()};
+    /*std::vector<std::pair<int, std::string>> out{chainer.form_idx_name()};
     std::vector<std::pair<int, double>> out2{chainer.form_idx_lambda()};
     //std::vector<std::tuple<int, int, double>> out3{chainer.form_idx_decay()};
     auto react_map = chainer.form_reaction();
@@ -245,7 +247,7 @@ Chain read_chain_xml(const std::string& filename) {
         << std::get<1>(map[2.53000e-02][i]) << "  "<< std::get<2>(map[2.53000e-02][i]) << "  " <<std::endl;
     }
     auto out4 {chainer.get_yield_map(8, "Xe135")};
-    int i{0};
+    int i{0};*/
     return chainer;
 }
 
